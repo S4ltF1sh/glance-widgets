@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">glance-widgets</string>
+    <string name="widget_empty_des">Click to add widget</string>
+</resources>
