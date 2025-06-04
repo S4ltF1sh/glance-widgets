@@ -1,0 +1,11 @@
+package com.s4ltf1sh.glance_widgets.widget.core.medium
+
+import androidx.glance.appwidget.GlanceAppWidget
+import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.widget.core.BaseWidgetReceiver
+
+class WidgetMediumReceiver: BaseWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = WidgetMedium()
+    override val widgetSize: WidgetSize
+        get() = WidgetSize.MEDIUM
+}

@@ -10,6 +10,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".WidgetApplication"
         android:theme="@style/Theme.Glancewidgets"
         tools:targetApi="31">
         <activity
@@ -25,7 +26,7 @@
         </activity>
 
         <receiver
-            android:name=".widget_core.small.WidgetSmallReceiver"
+            android:name=".widget.core.small.WidgetSmallReceiver"
             android:exported="true">
 
             <intent-filter>
@@ -37,7 +38,7 @@
         </receiver>
 
         <receiver
-            android:name=".widget_core.medium.WidgetMediumReceiver"
+            android:name=".widget.core.medium.WidgetMediumReceiver"
             android:exported="true">
 
             <intent-filter>
@@ -49,7 +50,7 @@
         </receiver>
 
         <receiver
-            android:name=".widget_core.large.WidgetLargeReceiver"
+            android:name=".widget.core.large.WidgetLargeReceiver"
             android:exported="true">
 
             <intent-filter>
