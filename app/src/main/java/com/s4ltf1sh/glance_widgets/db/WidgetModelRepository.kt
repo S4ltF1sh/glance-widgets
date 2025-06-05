@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,19 +36,13 @@ class WidgetModelRepository @Inject internal constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun getWidget(widgetId: Int): WidgetEntity? {
-        return widgetModelDao.getWidget(widgetId)
-    }
+    fun getWidgetFlow(widgetId: Int) = widgetModelDao.getWidgetFlow(widgetId).distinctUntilChanged()
 
-    suspend fun insertWidget(widget: WidgetEntity) {
-        widgetModelDao.insertWidget(widget)
-    }
+    suspend fun getWidget(widgetId: Int): WidgetEntity? = widgetModelDao.getWidget(widgetId)
 
-    suspend fun deleteWidget(widget: WidgetEntity) {
-        widgetModelDao.deleteWidget(widget)
-    }
+    suspend fun insertWidget(widget: WidgetEntity) = widgetModelDao.insertWidget(widget)
 
-    suspend fun deleteWidgetById(widgetId: Int) {
-        widgetModelDao.deleteWidgetById(widgetId)
-    }
+    suspend fun deleteWidget(widget: WidgetEntity) = widgetModelDao.deleteWidget(widget)
+
+    suspend fun deleteWidgetById(widgetId: Int) = widgetModelDao.deleteWidgetById(widgetId)
 }

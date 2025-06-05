@@ -17,6 +17,7 @@ import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.core.large.WidgetLarge
 import com.s4ltf1sh.glance_widgets.widget.core.medium.WidgetMedium
 import com.s4ltf1sh.glance_widgets.widget.core.small.WidgetSmall
+import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -67,8 +68,10 @@ class MainActivity : ComponentActivity() {
         val repo = WidgetModelRepository.get(applicationContext)
         val existingWidget = repo.getWidget(widgetId)
 
-        if (existingWidget == null)
+        if (existingWidget == null) {
+            Log.e("ConfigurationActivity", "Widget with ID $widgetId not found")
             return@launch
+        }
 
         val updatedWidget = existingWidget.copy(
             type = type,
@@ -76,37 +79,26 @@ class MainActivity : ComponentActivity() {
         )
 
         repo.insertWidget(updatedWidget)
-        updateSpecificWidget(widgetId)
+        updateSpecificWidget(widgetId, updatedWidget.size)
     }
 
-    private suspend fun updateSpecificWidget(widgetId: Int) {
+    private suspend fun updateSpecificWidget(widgetId: Int, widgetSize: WidgetSize) {
         val glanceManager = GlanceAppWidgetManager(this)
-
+        val glanceId = glanceManager.getGlanceIdBy(widgetId)
         try {
-            // Find the correct glance ID for this widget ID
-            val smallGlanceIds = glanceManager.getGlanceIds(WidgetSmall::class.java)
-            val mediumGlanceIds = glanceManager.getGlanceIds(WidgetMedium::class.java)
-            val largeGlanceIds = glanceManager.getGlanceIds(WidgetLarge::class.java)
-
-            // Try to update the widget by finding matching glance ID
-            smallGlanceIds.forEach { glanceId ->
-                if (glanceManager.getAppWidgetId(glanceId) == widgetId) {
+            when (widgetSize) {
+                WidgetSize.SMALL -> {
                     WidgetSmall().update(this, glanceId)
                 }
-            }
 
-            mediumGlanceIds.forEach { glanceId ->
-                if (glanceManager.getAppWidgetId(glanceId) == widgetId) {
+                WidgetSize.MEDIUM -> {
                     WidgetMedium().update(this, glanceId)
                 }
-            }
 
-            largeGlanceIds.forEach { glanceId ->
-                if (glanceManager.getAppWidgetId(glanceId) == widgetId) {
+                WidgetSize.LARGE -> {
                     WidgetLarge().update(this, glanceId)
                 }
             }
-
         } catch (e: Exception) {
             Log.e("ConfigurationActivity", "Error updating specific widget", e)
         }

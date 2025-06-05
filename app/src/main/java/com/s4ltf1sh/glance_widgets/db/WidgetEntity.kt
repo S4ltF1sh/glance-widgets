@@ -17,4 +17,12 @@ data class WidgetEntity(
     val size: WidgetSize,
     val lastUpdated: Long = System.currentTimeMillis(),
     val data: String = "" // JSON data specific to widget type
-): WidgetState
+): WidgetState {
+    companion object {
+        val EMPTY = WidgetEntity(
+            widgetId = -1,
+            type = WidgetType.NONE,
+            size = WidgetSize.SMALL
+        )
+    }
+}
