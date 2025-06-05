@@ -6,9 +6,13 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WidgetModelDao {
+    @Query("SELECT * FROM widgets WHERE widgetId = :widgetId")
+    fun getWidgetFlow(widgetId: Int): Flow<WidgetEntity?>
+
     @Query("SELECT * FROM widgets WHERE widgetId = :widgetId")
     suspend fun getWidget(widgetId: Int): WidgetEntity?
 

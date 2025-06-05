@@ -2,6 +2,8 @@ package com.s4ltf1sh.glance_widgets.widget.core
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.GlanceAppWidget
@@ -11,6 +13,7 @@ import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
 import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import kotlinx.coroutines.launch
 
 abstract class BaseAppWidget : GlanceAppWidget() {
 
@@ -26,19 +29,23 @@ abstract class BaseAppWidget : GlanceAppWidget() {
         val modelRepo = WidgetModelRepository.get(context.applicationContext)
         val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
 
-        val widget = modelRepo.getWidget(widgetId) ?: run {
-            // Create default widget if not exists
-            val defaultWidget = WidgetEntity(
-                widgetId = widgetId,
-                type = WidgetType.NONE, // Default type
-                size = widgetSize
-            )
-            modelRepo.insertWidget(defaultWidget)
-            defaultWidget
-        }
-
         provideContent {
-            WidgetContent(widget = widget, widgetId = widgetId)
+            val widgetState = modelRepo.getWidgetFlow(widgetId).collectAsState(null)
+            val scope = rememberCoroutineScope()
+
+            widgetState.value?.let {
+                WidgetContent(widget = it, widgetId = widgetId)
+            } ?: run {
+                val defaultWidget = WidgetEntity(
+                    widgetId = widgetId,
+                    type = WidgetType.NONE, // Default type
+                    size = widgetSize
+                )
+
+                scope.launch {
+                    modelRepo.insertWidget(defaultWidget)
+                }
+            }
         }
     }
 
