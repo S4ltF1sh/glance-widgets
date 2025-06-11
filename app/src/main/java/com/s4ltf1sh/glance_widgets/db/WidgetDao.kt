@@ -9,7 +9,7 @@ import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface WidgetModelDao {
+interface WidgetDao {
     @Query("SELECT * FROM widgets WHERE widgetId = :widgetId")
     fun getWidgetFlow(widgetId: Int): Flow<WidgetEntity?>
 
