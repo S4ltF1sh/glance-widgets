@@ -1,6 +1,12 @@
 package com.s4ltf1sh.glance_widgets
 
 import android.appwidget.AppWidgetManager
+import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -14,20 +20,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.FileProvider.getUriForFile
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import coil3.imageLoader
+import coil3.memory.MemoryCache
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
 import com.s4ltf1sh.glance_widgets.widget.QuoteSelectionScreen
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.core.large.WidgetLarge
 import com.s4ltf1sh.glance_widgets.widget.core.medium.WidgetMedium
 import com.s4ltf1sh.glance_widgets.widget.core.small.WidgetSmall
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
-import com.s4ltf1sh.glance_widgets.widget.model.quotes.WidgetQuoteData
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.hilt.android.AndroidEntryPoint
@@ -91,7 +102,6 @@ class MainActivity : ComponentActivity() {
 
                     ScreenState.QUOTE_SELECTION -> {
                         QuoteSelectionScreen(
-                            widgetId = widgetId,
                             widgetSize = currentSize,
                             quotes = quotes.value,
                             onQuoteSelected = { quote ->
@@ -123,7 +133,10 @@ class MainActivity : ComponentActivity() {
             return@launch
         }
 
-        Log.d("MainActivity", "Updating widget with ID $widgetId, Type: $type, Size: $widgetSize, Data: $data")
+        Log.d(
+            "MainActivity",
+            "Updating widget with ID $widgetId, Type: $type, Size: $widgetSize, Data: $data"
+        )
 
         val updatedWidget = existingWidget.copy(
             type = type,
@@ -165,7 +178,6 @@ class MainActivity : ComponentActivity() {
         val quoteData = WidgetQuoteData(
             quoteId = quote.id,
             imageUrl = quote.imageUrl,
-            setName = quote.setName
         )
 
         updateWidget(
@@ -183,58 +195,41 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeSampleQuotes() {
-
         // Add sample quotes - replace with your actual quote images
         val sampleQuotes = listOf(
             // Set 1 - Motivational
             QuoteEntity(
-                setId = "motivational_1",
-                setName = "Motivational",
                 size = WidgetSize.SMALL,
-                imageResourceName = "quote_motivational_small",
-                imageUrl = "https://media-cldnry.s-nbcnews.com/image/upload/t_fit-760w,f_auto,q_auto:best/rockcms/2023-11/short-quotes-swl-231117-02-33d404.jpg"
+                imageUrl = "https://picsum.photos/400"
             ),
             QuoteEntity(
-                setId = "motivational_1",
-                setName = "Motivational",
                 size = WidgetSize.MEDIUM,
-                imageResourceName = "quote_motivational_medium",
-                imageUrl = "https://www.southernliving.com/thmb/qHLoX6WsSNp9SHa05F3EDYvu-1I=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/SL_INSPIRATIONQUOTE_03-8541df15ac2a4058804fa5277d4e78cd.jpg"
+                imageUrl = "https://picsum.photos/200/300"
             ),
             QuoteEntity(
-                setId = "motivational_1",
-                setName = "Motivational",
                 size = WidgetSize.LARGE,
-                imageResourceName = "quote_motivational_large",
-                imageUrl = "https://www.incimages.com/uploaded_files/image/970x450/getty_1209306260_200013332000928021_408688.jpg"
+                imageUrl = "https://picsum.photos/200/300"
             ),
 
             // Set 2 - Inspirational
             QuoteEntity(
-                setId = "inspirational_1",
-                setName = "Inspirational",
                 size = WidgetSize.SMALL,
-                imageResourceName = "quote_inspirational_small",
-                imageUrl = "https://www.incimages.com/uploaded_files/image/970x450/getty_1209306260_200013332000928021_408688.jpg"
+                imageUrl = "https://picsum.photos/200/300"
             ),
             QuoteEntity(
-                setId = "inspirational_1",
-                setName = "Inspirational",
                 size = WidgetSize.MEDIUM,
-                imageResourceName = "quote_inspirational_medium",
-                imageUrl = "https://www.incimages.com/uploaded_files/image/970x450/getty_1209306260_200013332000928021_408688.jpg"
+                imageUrl = "https://picsum.photos/200/300"
             ),
             QuoteEntity(
-                setId = "inspirational_1",
-                setName = "Inspirational",
                 size = WidgetSize.LARGE,
-                imageResourceName = "quote_inspirational_large",
-                imageUrl = "https://www.incimages.com/uploaded_files/image/970x450/getty_1209306260_200013332000928021_408688.jpg"
+                imageUrl = "https://picsum.photos/200/300"
             ),
         )
 
         mainViewModel.insertQuotes(sampleQuotes)
     }
+
+
 }
 
 private enum class ScreenState {

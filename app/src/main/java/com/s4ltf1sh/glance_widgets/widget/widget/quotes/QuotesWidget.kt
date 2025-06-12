@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
-import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.actionStartActivity
@@ -14,15 +13,12 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
+import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
-import com.s4ltf1sh.glance_widgets.widget.model.quotes.WidgetQuoteData
+import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -60,19 +56,8 @@ fun QuotesWidget(
                     ?: throw Exception("Invalid quote data")
 
             // Try to load from resources first
-            val imageProvider = getImageProvider(context, quoteData)
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(quoteData.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null
-            )
-            Image(
-                provider = imageProvider,
-                contentDescription = "Quote: ${quoteData.setName}",
-                modifier = GlanceModifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+            WidgetImage(
+                image = quoteData.imageUrl,
             )
         } else {
             // Show empty state

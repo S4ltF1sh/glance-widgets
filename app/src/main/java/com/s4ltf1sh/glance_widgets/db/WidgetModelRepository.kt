@@ -4,7 +4,7 @@ import android.content.Context
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteDao
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.di.AppCoroutineScope
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import dagger.hilt.EntryPoint
@@ -60,10 +60,6 @@ class WidgetModelRepository @Inject internal constructor(
     // Quote related methods
     fun getQuotesBySize(size: WidgetSize): Flow<List<QuoteEntity>> {
         return quoteDao.getQuotesBySize(size)
-    }
-
-    fun getQuotesBySizeOnce(size: WidgetSize): List<QuoteEntity> {
-        return quoteDao.getQuotesBySizeOnce(size)
     }
 
     suspend fun getQuoteById(quoteId: Long): QuoteEntity? {

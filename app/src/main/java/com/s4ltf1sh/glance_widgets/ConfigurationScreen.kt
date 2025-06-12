@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 
 @Composable
 internal fun ConfigurationScreen(

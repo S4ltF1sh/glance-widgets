@@ -1,6 +1,5 @@
 package com.s4ltf1sh.glance_widgets.widget
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,20 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 
 @Composable
 fun QuoteSelectionScreen(
-    widgetId: Int,
     widgetSize: WidgetSize,
     quotes: List<QuoteEntity>,
     onQuoteSelected: (QuoteEntity) -> Unit
@@ -99,34 +92,10 @@ private fun QuoteItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box {
-            // If using resource name
-            if (!quote.imageResourceName.isNullOrEmpty()) {
-                val context = LocalContext.current
-                val resourceId = context.resources.getIdentifier(
-                    quote.imageResourceName,
-                    "drawable",
-                    context.packageName
-                )
-                if (resourceId != 0) {
-                    Image(
-                        painter = painterResource(id = resourceId),
-                        contentDescription = "Quote: ${quote.setName}",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-            } else {
-                // If using URL
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(quote.imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Quote: ${quote.setName}",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
+            WidgetImage(
+                image = quote.imageUrl,
+                modifier = Modifier.fillMaxSize()
+            )
 
             // Set name overlay
             Surface(
@@ -137,7 +106,7 @@ private fun QuoteItem(
                 shape = MaterialTheme.shapes.small
             ) {
                 Text(
-                    text = quote.setName,
+                    text = quote.id.toString(),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall
                 )

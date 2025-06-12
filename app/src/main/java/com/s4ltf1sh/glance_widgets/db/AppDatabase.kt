@@ -8,7 +8,7 @@ import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 
 @Database(
     entities = [WidgetEntity::class, QuoteEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(WidgetConverters::class)

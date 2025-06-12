@@ -1,8 +1,8 @@
 package com.s4ltf1sh.glance_widgets.db
 
 import androidx.room.TypeConverter
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 
 class WidgetConverters {
     @TypeConverter

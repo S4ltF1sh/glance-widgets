@@ -2,8 +2,8 @@ package com.s4ltf1sh.glance_widgets.widget.core.small
 
 import androidx.compose.runtime.Composable
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidget

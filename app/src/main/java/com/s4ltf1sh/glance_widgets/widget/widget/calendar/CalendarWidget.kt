@@ -13,7 +13,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import androidx.glance.layout.Column
 import androidx.glance.layout.Alignment
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget

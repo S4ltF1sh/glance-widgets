@@ -11,8 +11,8 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.provideContent
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 import kotlinx.coroutines.launch
 
 abstract class BaseAppWidget : GlanceAppWidget() {

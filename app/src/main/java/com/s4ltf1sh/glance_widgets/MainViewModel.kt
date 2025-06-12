@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,7 +1,7 @@
 package com.s4ltf1sh.glance_widgets.widget.core.large
 
 import androidx.glance.appwidget.GlanceAppWidget
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.widget.core.BaseWidgetReceiver
 
 class WidgetLargeReceiver : BaseWidgetReceiver() {

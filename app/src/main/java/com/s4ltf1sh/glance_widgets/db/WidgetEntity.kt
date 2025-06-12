@@ -2,8 +2,8 @@ package com.s4ltf1sh.glance_widgets.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 
 sealed interface WidgetState {
     object Empty : WidgetState
