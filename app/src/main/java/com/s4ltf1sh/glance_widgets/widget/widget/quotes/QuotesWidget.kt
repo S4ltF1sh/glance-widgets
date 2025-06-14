@@ -1,10 +1,11 @@
 package com.s4ltf1sh.glance_widgets.widget.widget.quotes
 
-import android.content.Context
+import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.actionStartActivity
@@ -13,22 +14,18 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
-import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 @Composable
 fun QuotesWidget(
     widget: WidgetEntity,
-    widgetId: Int
+    widgetId: Int,
+    path: String
 ) {
-    val context = LocalContext.current
-    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     /*
     * Fucking glance can't load images from URLs directly,
     * We need to start an Worker to load images from URLs
@@ -51,13 +48,13 @@ fun QuotesWidget(
         contentAlignment = Alignment.Center
     ) {
         if (widget.data.isNotEmpty()) {
-            val quoteData =
-                moshi.adapter(WidgetQuoteData::class.java).fromJson(widget.data)
-                    ?: throw Exception("Invalid quote data")
-
             // Try to load from resources first
-            WidgetImage(
-                image = quoteData.imageUrl,
+            Image(
+                provider = getImageProvider(path),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = GlanceModifier
+                    .fillMaxSize()
             )
         } else {
             // Show empty state
@@ -97,19 +94,10 @@ private fun QuoteErrorState() {
     }
 }
 
-private fun getImageProvider(context: Context, quoteData: WidgetQuoteData): ImageProvider {
-    // Try to get resource ID from image URL (assuming it's a resource name)
-    val resourceId = context.resources.getIdentifier(
-        quoteData.imageUrl.removePrefix("@drawable/"),
-        "drawable",
-        context.packageName
-    )
-
-    return if (resourceId != 0) {
-        ImageProvider(resourceId)
-    } else {
-        // For now, return a placeholder. In production, you might want to handle URLs differently
-        // You could use a library like Coil for Glance if needed
-        ImageProvider(android.R.drawable.gallery_thumb)
+private fun getImageProvider(path: String): ImageProvider {
+    if (path.startsWith("content://")) {
+        return ImageProvider(path.toUri())
     }
+    val bitmap = BitmapFactory.decodeFile(path)
+    return ImageProvider(bitmap)
 }
