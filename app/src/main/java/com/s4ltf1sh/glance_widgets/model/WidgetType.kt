@@ -1,5 +1,5 @@
 package com.s4ltf1sh.glance_widgets.model
 
 enum class WidgetType {
-    WEATHER, CALENDAR, PHOTO, QUOTES, NONE
+    WEATHER, CALENDAR, PHOTO, QUOTE, NONE
 }

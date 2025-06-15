@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.provider.MediaStore.Images
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
@@ -29,6 +30,7 @@ import coil.request.CachePolicy
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.s4ltf1sh.glance_widgets.db.photo.Media
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,7 +43,7 @@ import java.security.MessageDigest
 import kotlin.io.copyTo
 import kotlin.use
 
-fun Context.getFilePathFromUri(uri: Uri?): String? {
+fun Context.getFilePathFromUriCawc(uri: Uri?): String? {
     uri ?: return null
 
     // Xử lý Document URIs (Android 4.4+)
@@ -466,4 +468,52 @@ private fun generateFilename(url: String): String {
         // Fallback to timestamp-based name
         "img_${System.currentTimeMillis()}.jpg"
     }
+}
+
+// Run the querying logic in a coroutine outside of the main thread to keep the app responsive.
+// Keep in mind that this code snippet is querying only images of the shared storage.
+suspend fun Context.getImages(): List<Media> = withContext(Dispatchers.IO) {
+    val projection = arrayOf(
+        Images.Media._ID,
+        Images.ImageColumns.DATA,
+        Images.Media.DISPLAY_NAME,
+        Images.Media.SIZE,
+        Images.Media.MIME_TYPE,
+    )
+
+    val collectionUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        // Query all the device storage volumes instead of the primary only
+        Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    } else {
+        Images.Media.EXTERNAL_CONTENT_URI
+    }
+
+    val images = mutableListOf<Media>()
+
+    contentResolver.query(
+        collectionUri,
+        projection,
+        null,
+        null,
+        "${Images.Media.DATE_ADDED} DESC"
+    )?.use { cursor ->
+        val idColumn = cursor.getColumnIndexOrThrow(Images.Media._ID)
+        val dataColumn = cursor.getColumnIndexOrThrow(Images.ImageColumns.DATA)
+        val displayNameColumn = cursor.getColumnIndexOrThrow(Images.Media.DISPLAY_NAME)
+        val sizeColumn = cursor.getColumnIndexOrThrow(Images.Media.SIZE)
+        val mimeTypeColumn = cursor.getColumnIndexOrThrow(Images.Media.MIME_TYPE)
+
+        while (cursor.moveToNext()) {
+            val uri = ContentUris.withAppendedId(collectionUri, cursor.getLong(idColumn))
+            val path = cursor.getString(dataColumn)
+            val name = cursor.getString(displayNameColumn)
+            val size = cursor.getLong(sizeColumn)
+            val mimeType = cursor.getString(mimeTypeColumn)
+
+            val image = Media(uri, path ?: "undefined", name, size, mimeType)
+            images.add(image)
+        }
+    }
+
+    return@withContext images
 }

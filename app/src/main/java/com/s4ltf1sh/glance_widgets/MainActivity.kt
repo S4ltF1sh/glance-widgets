@@ -2,6 +2,7 @@ package com.s4ltf1sh.glance_widgets
 
 import android.appwidget.AppWidgetManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -18,8 +19,10 @@ import androidx.lifecycle.lifecycleScope
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.ui.screen.ConfigurationScreen
+import com.s4ltf1sh.glance_widgets.ui.screen.PhotoSelectionScreen
+import com.s4ltf1sh.glance_widgets.ui.screen.QuoteSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
-import com.s4ltf1sh.glance_widgets.widget.QuoteSelectionScreen
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +53,8 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        Log.d("MainActivity", "Widget ID: $widgetId, Type: $currentType, Size: $currentSize")
+
         mainViewModel.getQuotesBySize(currentSize)
 
         setContent {
@@ -65,8 +70,11 @@ class MainActivity : ComponentActivity() {
                                 widgetId = widgetId,
                                 currentType = currentType,
                                 onTypeSelected = { type ->
-                                    if (type == WidgetType.QUOTES)
+                                    if (type == WidgetType.QUOTE)
                                         screenState = ScreenState.QUOTE_SELECTION
+                                    else if (type == WidgetType.PHOTO) {
+                                        screenState = ScreenState.PHOTO_SELECTION
+                                    }
                                 }
                             )
                         } else {
@@ -90,6 +98,18 @@ class MainActivity : ComponentActivity() {
                                     imageUrl = quote.imageUrl
                                 )
 
+                                finish()
+                            }
+                        )
+                    }
+
+                    ScreenState.PHOTO_SELECTION -> {
+                        PhotoSelectionScreen(
+                            widgetId = widgetId,
+                            onBackPressed = {
+                                screenState = ScreenState.TYPE_SELECTION
+                            },
+                            onCloseActivity = {
                                 finish()
                             }
                         )
@@ -144,7 +164,8 @@ class MainActivity : ComponentActivity() {
 
 private enum class ScreenState {
     TYPE_SELECTION,
-    QUOTE_SELECTION
+    QUOTE_SELECTION,
+    PHOTO_SELECTION
 }
 
 @Composable

@@ -1,9 +1,11 @@
 package com.s4ltf1sh.glance_widgets.widget.core
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
@@ -17,11 +19,20 @@ import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.Column
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.padding
+import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
+import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
+import androidx.work.WorkManager
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
+import com.s4ltf1sh.glance_widgets.model.Widget
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
@@ -35,10 +46,19 @@ abstract class BaseAppWidget : GlanceAppWidget() {
 
     abstract val widgetSize: WidgetSize
 
+    // Use the new state definition
+    override val stateDefinition = BaseWidgetStateDefinition
+
     companion object {
         val KEY_WIDGET_ID = ActionParameters.Key<Int>("widget_id")
         val KEY_WIDGET_TYPE = ActionParameters.Key<String>("widget_type")
         val KEY_WIDGET_SIZE = ActionParameters.Key<String>("widget_size")
+
+        private const val WORKER_UNIQUE_NAME = "WorkerUniqueNameABTheme"
+
+        fun getWidgetWorkerName(widgetId: Int): String {
+            return "${WORKER_UNIQUE_NAME}_${widgetId}"
+        }
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -46,22 +66,57 @@ abstract class BaseAppWidget : GlanceAppWidget() {
         val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
 
         provideContent {
-            val widgetState = modelRepo.getWidgetFlow(widgetId).collectAsState(null)
+            val appWidgetState = currentState<AppWidgetState>()
             val scope = rememberCoroutineScope()
 
-            widgetState.value?.let {
-                Content(it, widgetId)
-            } ?: run {
-                val defaultWidget = WidgetEntity(
-                    widgetId = widgetId,
-                    type = WidgetType.NONE, // Default type
-                    size = widgetSize
-                )
+            Log.d(
+                "BaseAppWidget",
+                "Providing widget with ID: $widgetId, Size: $widgetSize, State: $appWidgetState"
+            )
 
-                scope.launch {
-                    modelRepo.insertWidget(defaultWidget)
+            // Initialize widget if in Init state
+            LaunchedEffect(appWidgetState) {
+                Log.d("BaseAppWidget", "LaunchedEffect triggered for widget ID: $widgetId")
+                if (appWidgetState == AppWidgetState.Init) {
+                    scope.launch {
+                        try {
+                            val existingWidget = modelRepo.getWidget(widgetId)
+                            if (existingWidget != null) {
+                                // Widget exists in database, set to success
+                                Log.d("BaseAppWidget", "Widget found in database: $existingWidget")
+                                context.setWidgetSuccess(
+                                    glanceId = id,
+                                    widgetSize = widgetSize,
+                                    widget = existingWidget
+                                )
+                            } else {
+                                // Create new widget with default type
+                                val defaultWidget = WidgetEntity(
+                                    widgetId = widgetId,
+                                    type = WidgetType.NONE,
+                                    size = widgetSize
+                                )
+                                modelRepo.insertWidget(defaultWidget)
+
+                                context.setWidgetEmpty(
+                                    glanceId = id,
+                                    widgetSize = widgetSize
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e("BaseAppWidget", "Error initializing widget", e)
+                            context.setWidgetError(
+                                glanceId = id,
+                                widgetSize = widgetSize,
+                                message = "Failed to initialize widget: ${e.message}",
+                                throwable = e
+                            )
+                        }
+                    }
                 }
             }
+
+            Content(appWidgetState, widgetId, context, id)
         }
     }
 
@@ -69,12 +124,22 @@ abstract class BaseAppWidget : GlanceAppWidget() {
         super.onDelete(context, glanceId)
         val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
         val modelRepo = WidgetModelRepository.get(context.applicationContext)
-        modelRepo.deleteWidgetById(widgetId)
-        workerCancel(context, widgetId)
+
+        try {
+            modelRepo.deleteWidgetById(widgetId)
+            workerCancel(context, widgetId)
+        } catch (e: Exception) {
+            Log.e("BaseAppWidget", "Error deleting widget", e)
+        }
     }
 
     @Composable
-    fun Content(widget: WidgetEntity, widgetId: Int) {
+    fun Content(
+        appWidgetState: AppWidgetState,
+        widgetId: Int,
+        context: Context,
+        glanceId: GlanceId
+    ) {
         GlanceTheme {
             Box(
                 modifier = GlanceModifier
@@ -84,33 +149,107 @@ abstract class BaseAppWidget : GlanceAppWidget() {
                     .cornerRadius(16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                ContentSuccess(widget, widgetId)
+                when (appWidgetState) {
+                    AppWidgetState.Init -> ContentLoading()
+                    AppWidgetState.Empty -> ContentEmpty(widgetId, context, glanceId)
+                    is AppWidgetState.Success -> ContentSuccess(appWidgetState.widget, widgetId)
+                    is AppWidgetState.Error -> ContentError(
+                        appWidgetState.message,
+                        widgetId,
+                        context,
+                        glanceId
+                    )
+                }
             }
         }
     }
 
     @Composable
     open fun ContentLoading() {
-        CircularProgressIndicator()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = "Initializing...",
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = GlanceModifier.padding(top = 8.dp)
+            )
+        }
     }
 
     @Composable
-    open fun ContentSuccess(widget: WidgetEntity, widgetId: Int) {
+    open fun ContentEmpty(widgetId: Int, context: Context, glanceId: GlanceId) {
+        WidgetEmpty(
+            widget = WidgetEntity(
+                widgetId = widgetId,
+                type = WidgetType.NONE,
+                size = widgetSize
+            ).toWidget(),
+            widgetId = widgetId
+        )
+    }
+
+    @Composable
+    open fun ContentSuccess(widget: Widget, widgetId: Int) {
         when (widget.type) {
             WidgetType.WEATHER -> WeatherWidget(widget, widgetId)
             WidgetType.CALENDAR -> CalendarWidget(widget, widgetId)
             WidgetType.PHOTO -> PhotoWidget(widget, widgetId)
-            WidgetType.QUOTES -> QuotesWidget(widget, widgetId)
+            WidgetType.QUOTE -> QuotesWidget(widget, widgetId)
             else -> WidgetEmpty(widget, widgetId)
         }
     }
 
     @Composable
-    open fun ContentError() {
+    open fun ContentError(
+        errorMessage: String,
+        widgetId: Int,
+        context: Context,
+        glanceId: GlanceId
+    ) {
+        val scope = rememberCoroutineScope()
 
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = GlanceModifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Error",
+                style = TextStyle(
+                    color = ColorProvider(Color.Red),
+                    textAlign = TextAlign.Center
+                )
+            )
+            Text(
+                text = errorMessage,
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = GlanceModifier.padding(top = 4.dp)
+            )
+
+            // Optional: Add retry functionality
+            LaunchedEffect(Unit) {
+                scope.launch {
+                    // Auto retry after 5 seconds
+                    kotlinx.coroutines.delay(5000)
+                    context.refreshWidget(
+                        glanceId = glanceId,
+                        widgetSize = widgetSize
+                    )
+                }
+            }
+        }
     }
 
-    abstract fun workerEnqueue(context: Context, size: DpSize, glanceId: GlanceId)
+    open fun workerEnqueue(context: Context, size: DpSize, glanceId: GlanceId) {}
 
-    abstract fun workerCancel(context: Context, widgetId: Int)
+    open fun workerCancel(context: Context, widgetId: Int) {
+        WorkManager.getInstance(context).cancelUniqueWork(getWidgetWorkerName(widgetId))
+    }
 }
