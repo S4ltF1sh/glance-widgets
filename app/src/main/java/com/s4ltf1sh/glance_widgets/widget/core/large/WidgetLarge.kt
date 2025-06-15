@@ -41,7 +41,7 @@ class WidgetLarge : BaseAppWidget() {
 
     override fun workerCancel(
         context: Context,
-        glanceId: GlanceId
+        widgetId: Int
     ) {
         TODO("Not yet implemented")
     }

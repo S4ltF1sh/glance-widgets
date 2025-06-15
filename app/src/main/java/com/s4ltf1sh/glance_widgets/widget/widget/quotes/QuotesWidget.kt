@@ -3,7 +3,6 @@ package com.s4ltf1sh.glance_widgets.widget.widget.quotes
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -18,14 +17,17 @@ import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
+import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 @Composable
 fun QuotesWidget(
     widget: WidgetEntity,
-    widgetId: Int,
-    path: String
+    widgetId: Int
 ) {
+    val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     /*
     * Fucking glance can't load images from URLs directly,
     * We need to start an Worker to load images from URLs
@@ -48,9 +50,13 @@ fun QuotesWidget(
         contentAlignment = Alignment.Center
     ) {
         if (widget.data.isNotEmpty()) {
+            val quoteData =
+                moshi.adapter(WidgetQuoteData::class.java).fromJson(widget.data)
+                    ?: throw Exception("Invalid quote data")
+
             // Try to load from resources first
             Image(
-                provider = getImageProvider(path),
+                provider = getImageProvider(quoteData.imagePath),
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds,
                 modifier = GlanceModifier
@@ -95,9 +101,6 @@ private fun QuoteErrorState() {
 }
 
 private fun getImageProvider(path: String): ImageProvider {
-    if (path.startsWith("content://")) {
-        return ImageProvider(path.toUri())
-    }
     val bitmap = BitmapFactory.decodeFile(path)
     return ImageProvider(bitmap)
 }

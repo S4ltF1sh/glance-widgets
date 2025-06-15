@@ -30,7 +30,7 @@ object WidgetStateDefinition : GlanceStateDefinition<WidgetState> {
     }
 
     private object WidgetStateSerializer : Serializer<WidgetState> {
-        override val defaultValue = WidgetState.Loading
+        override val defaultValue = WidgetState.Initial
 
         override suspend fun readFrom(input: InputStream): WidgetState = try {
             Json.decodeFromString(

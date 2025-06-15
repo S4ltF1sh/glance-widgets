@@ -8,25 +8,37 @@ import android.content.Intent
 import android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Toast
 import androidx.core.content.FileProvider.getUriForFile
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.net.toUri
-import coil3.imageLoader
-import coil3.memory.MemoryCache
-import coil3.request.ErrorResult
-import coil3.request.ImageRequest
+import coil.ImageLoader
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
+import coil.memory.MemoryCache
+import coil.request.CachePolicy
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
+import java.security.MessageDigest
+import kotlin.io.copyTo
 import kotlin.use
 
 fun Context.getFilePathFromUri(uri: Uri?): String? {
@@ -208,9 +220,24 @@ fun Context.downloadImageUsingDownloadManager(imageUrl: String) {
     ).show()
 }
 
+suspend fun Context.getRandomImage(url: String, force: Boolean = false): Bitmap? {
+    val request = ImageRequest.Builder(this).data(url).apply {
+        if (force) {
+            memoryCachePolicy(CachePolicy.DISABLED)
+            diskCachePolicy(CachePolicy.DISABLED)
+        }
+    }.build()
+
+    // Request the image to be loaded and throw error if it failed
+    return when (val result = imageLoader.execute(request)) {
+        is ErrorResult -> throw result.throwable
+        is SuccessResult -> result.drawable.toBitmapOrNull()
+    }
+}
+
+@OptIn(ExperimentalCoilApi::class)
 suspend fun Context.downloadImage(
     url: String,
-    applicationContext: Context,
     force: Boolean
 ): String {
     val request = ImageRequest.Builder(this)
@@ -268,5 +295,175 @@ suspend fun Context.downloadImage(
 
     return requireNotNull(path) {
         "Couldn't find cached file"
+    }
+}
+
+
+private const val TAG = "CoilImageDownload"
+private const val HIDDEN_IMAGE_FOLDER = ".widget_images"
+
+/**
+ * Download image using Coil library - more efficient with built-in caching
+ */
+suspend fun Context.downloadImageWithCoil(
+    url: String,
+    force: Boolean = false
+): String = withContext(Dispatchers.IO) {
+    try {
+        // Create hidden folder
+        val hiddenFolder = File(filesDir, HIDDEN_IMAGE_FOLDER)
+        if (!hiddenFolder.exists()) {
+            hiddenFolder.mkdirs()
+        }
+
+        val filename = generateFilename(url)
+        val imageFile = File(hiddenFolder, filename)
+
+        // Check if already exists
+        if (!force && imageFile.exists() && imageFile.length() > 0) {
+            Log.d(TAG, "Using cached image: ${imageFile.absolutePath}")
+            return@withContext imageFile.absolutePath
+        }
+
+        // Download using Coil
+        val imageLoader = ImageLoader.Builder(this@downloadImageWithCoil)
+            .crossfade(false)
+            .build()
+
+        val request = ImageRequest.Builder(this@downloadImageWithCoil)
+            .data(url)
+            .allowHardware(false) // Important for saving bitmap
+            .build()
+
+        val result = imageLoader.execute(request)
+
+        if (result is SuccessResult) {
+            // Save bitmap to file
+            val bitmap = result.drawable.toBitmap()
+            saveBitmapToFile(bitmap, imageFile)
+
+            Log.d(TAG, "Image saved with Coil: ${imageFile.absolutePath}")
+            return@withContext imageFile.absolutePath
+        } else {
+            Log.e(TAG, "Coil download failed")
+            ""
+        }
+
+    } catch (e: Exception) {
+        Log.e(TAG, "Error downloading with Coil", e)
+        ""
+    }
+}
+
+/**
+ * Extension function to convert Drawable to Bitmap
+ */
+private fun android.graphics.drawable.Drawable.toBitmap(): Bitmap {
+    if (this is android.graphics.drawable.BitmapDrawable) {
+        return bitmap
+    }
+
+    val bitmap = createBitmap(intrinsicWidth, intrinsicHeight)
+
+    val canvas = android.graphics.Canvas(bitmap)
+    setBounds(0, 0, canvas.width, canvas.height)
+    draw(canvas)
+
+    return bitmap
+}
+
+/**
+ * Save bitmap to file with compression
+ */
+private fun saveBitmapToFile(bitmap: Bitmap, file: File) {
+    val tempFile = File(file.parent, "${file.name}.tmp")
+
+    FileOutputStream(tempFile).use { out ->
+        // Determine format from extension
+        val format = Bitmap.CompressFormat.PNG
+
+        // Compress with high quality
+        bitmap.compress(format, 95, out)
+    }
+
+    // Rename temp to final
+    if (!tempFile.renameTo(file)) {
+        tempFile.delete()
+        throw Exception("Failed to save image file")
+    }
+}
+
+/**
+ * Optimized version with size constraints for widgets
+ */
+suspend fun Context.downloadImageForWidget(
+    url: String,
+    maxWidth: Int = 1080,
+    maxHeight: Int = 1080,
+    force: Boolean = false
+): String = withContext(Dispatchers.IO) {
+    try {
+        val hiddenFolder = File(filesDir, HIDDEN_IMAGE_FOLDER)
+        if (!hiddenFolder.exists()) {
+            hiddenFolder.mkdirs()
+        }
+
+        // Include size in filename for different widget sizes
+        val filename = generateFilenameWithSize(url, maxWidth, maxHeight)
+        val imageFile = File(hiddenFolder, filename)
+
+        if (!force && imageFile.exists() && imageFile.length() > 0) {
+            return@withContext imageFile.absolutePath
+        }
+
+        val imageLoader = ImageLoader.Builder(this@downloadImageForWidget)
+            .crossfade(false)
+            .build()
+
+        val request = ImageRequest.Builder(this@downloadImageForWidget)
+            .data(url)
+            .size(maxWidth, maxHeight) // Resize for widget
+            .allowHardware(false)
+            .build()
+
+        val result = imageLoader.execute(request)
+
+        if (result is SuccessResult) {
+            val bitmap = result.drawable.toBitmap()
+            saveBitmapToFile(bitmap, imageFile)
+            return@withContext imageFile.absolutePath
+        }
+
+        ""
+    } catch (e: Exception) {
+        Log.e(TAG, "Error downloading widget image", e)
+        ""
+    }
+}
+
+private fun generateFilenameWithSize(url: String, width: Int, height: Int): String {
+    val baseHash = generateFilename(url).substringBeforeLast('.')
+    val extension = url.substringAfterLast('.', "jpg").substringBefore('?')
+    return "${baseHash}_${width}x${height}.$extension"
+}
+
+/**
+ * Generate unique filename from URL using MD5 hash
+ */
+private fun generateFilename(url: String): String {
+    return try {
+        val md = MessageDigest.getInstance("MD5")
+        val digest = md.digest(url.toByteArray())
+        val hash = digest.joinToString("") { "%02x".format(it) }
+
+        // Extract file extension from URL if possible
+        val extension = url.substringAfterLast('.', "")
+            .substringBefore('?')
+            .takeIf { it.length in 2..4 } ?: "jpg"
+
+        "$hash.$extension"
+    } catch (e: Exception) {
+        // Fallback to timestamp-based name
+        "img_${System.currentTimeMillis()}.jpg"
     }
 }

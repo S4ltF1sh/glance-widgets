@@ -12,6 +12,7 @@ import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.photo.PhotoWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.weather.WeatherWidget
 
 class WidgetSmall : BaseAppWidget() {
@@ -41,8 +42,8 @@ class WidgetSmall : BaseAppWidget() {
 
     override fun workerCancel(
         context: Context,
-        glanceId: GlanceId
+        widgetId: Int
     ) {
-        TODO("Not yet implemented")
+        QuotesWidgetWorker.cancel(context, widgetId)
     }
 }

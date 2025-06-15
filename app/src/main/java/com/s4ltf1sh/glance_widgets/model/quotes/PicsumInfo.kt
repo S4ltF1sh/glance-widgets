@@ -9,4 +9,5 @@ data class PicsumInfo(
     val width: Int,
     val height: Int,
     val url: String,
+    val download_url: String,
 )

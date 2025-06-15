@@ -83,8 +83,8 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     //Coil
+    implementation(libs.coil)
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
 
     //Retrofit
     // Retrofit
