@@ -12,7 +12,6 @@ import androidx.glance.background
 import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import androidx.glance.layout.Column
 import androidx.glance.layout.Alignment
@@ -20,10 +19,11 @@ import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.s4ltf1sh.glance_widgets.model.Widget
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun CalendarWidget(widget: WidgetEntity, widgetId: Int) {
+fun CalendarWidget(widget: Widget, widgetId: Int) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()

@@ -1,5 +1,6 @@
 package com.s4ltf1sh.glance_widgets.widget.widget.quotes
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -16,15 +17,16 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import androidx.core.graphics.createBitmap
+import com.s4ltf1sh.glance_widgets.model.Widget
 
 @Composable
 fun QuotesWidget(
-    widget: WidgetEntity,
+    widget: Widget,
     widgetId: Int
 ) {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -100,7 +102,56 @@ private fun QuoteErrorState() {
     }
 }
 
-private fun getImageProvider(path: String): ImageProvider {
-    val bitmap = BitmapFactory.decodeFile(path)
-    return ImageProvider(bitmap)
+internal fun getImageProvider(path: String): ImageProvider {
+    val options = BitmapFactory.Options().apply {
+        // Use RGB_565 instead of ARGB_8888 to reduce memory by 50%
+        inPreferredConfig = Bitmap.Config.RGB_565
+
+        // First pass: get image dimensions
+        inJustDecodeBounds = true
+    }
+
+    BitmapFactory.decodeFile(path, options)
+
+    // Calculate sample size to reduce image size
+    val maxWidgetSize = 400 // max widget dimension in pixels
+    options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, maxWidgetSize)
+
+    // Second pass: load actual bitmap
+    options.inJustDecodeBounds = false
+
+    val bitmap = BitmapFactory.decodeFile(path, options) ?: run {
+        // Fallback: create small placeholder if image fails to load
+        createBitmap(100, 100, Bitmap.Config.RGB_565).apply {
+            eraseColor(0xFFCCCCCC.toInt())
+        }
+    }
+
+    // Further optimize if still too large (>2MB)
+    val optimizedBitmap = if (bitmap.byteCount > 2 * 1024 * 1024) {
+        val scaleFactor = kotlin.math.sqrt(2_000_000.0 / bitmap.byteCount)
+        val newWidth = (bitmap.width * scaleFactor).toInt()
+        val newHeight = (bitmap.height * scaleFactor).toInt()
+
+        Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true).also {
+            if (it != bitmap) bitmap.recycle()
+        }
+    } else {
+        bitmap
+    }
+
+    return ImageProvider(optimizedBitmap)
+}
+
+private fun calculateSampleSize(width: Int, height: Int, maxSize: Int): Int {
+    var sampleSize = 1
+    if (width > maxSize || height > maxSize) {
+        val halfWidth = width / 2
+        val halfHeight = height / 2
+
+        while ((halfWidth / sampleSize) >= maxSize || (halfHeight / sampleSize) >= maxSize) {
+            sampleSize *= 2
+        }
+    }
+    return sampleSize
 }

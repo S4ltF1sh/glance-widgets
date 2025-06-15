@@ -18,12 +18,13 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
+import com.s4ltf1sh.glance_widgets.model.Widget
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun WeatherWidget(widget: WidgetEntity, widgetId: Int) {
+fun WeatherWidget(widget: Widget, widgetId: Int) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()

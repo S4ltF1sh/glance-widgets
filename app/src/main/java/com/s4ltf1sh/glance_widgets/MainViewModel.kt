@@ -31,12 +31,4 @@ class MainViewModel @Inject constructor(
     fun insertQuotes(quotes: List<QuoteEntity>) = viewModelScope.launch {
         widgetRepository.insertQuotes(quotes)
     }
-
-    fun quoteToJson(entity: QuoteEntity): String {
-        return widgetRepository.quoteEntityToJson(entity)
-    }
-
-    fun String.fromJsonToQuoteEntity(): QuoteEntity? {
-        return widgetRepository.quoteEntityFromJson(this)
-    }
 }

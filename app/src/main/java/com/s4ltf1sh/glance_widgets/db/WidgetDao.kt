@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import kotlinx.coroutines.flow.Flow
 
@@ -23,11 +24,14 @@ interface WidgetDao {
     suspend fun getWidgetsByType(type: WidgetType): List<WidgetEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWidget(widget: WidgetEntity)
+    suspend fun insertWidget(widget: WidgetEntity): Long
 
     @Delete
     suspend fun deleteWidget(widget: WidgetEntity)
 
     @Query("DELETE FROM widgets WHERE widgetId = :widgetId")
     suspend fun deleteWidgetById(widgetId: Int)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun updateWidget(widget: WidgetEntity): Int
 }

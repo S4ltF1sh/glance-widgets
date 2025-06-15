@@ -1,4 +1,4 @@
-package com.s4ltf1sh.glance_widgets.widget
+package com.s4ltf1sh.glance_widgets.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

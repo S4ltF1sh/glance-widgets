@@ -1,22 +1,22 @@
 package com.s4ltf1sh.glance_widgets
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltAndroidApp
-class WidgetApplication : Application() {
+class WidgetApplication() : Application(), Configuration.Provider {
     companion object {
         const val APP_TAG = "Widget_Sample"
     }
 
-    override fun onCreate() {
-        super.onCreate()
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
-        MainScope().launch {
-            delay(2000) // Wait for app to settle
-        }
-    }
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }

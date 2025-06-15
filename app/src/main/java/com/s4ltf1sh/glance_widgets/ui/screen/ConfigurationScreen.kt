@@ -1,4 +1,4 @@
-package com.s4ltf1sh.glance_widgets
+package com.s4ltf1sh.glance_widgets.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,7 +85,7 @@ private fun getWidgetIcon(type: WidgetType): String {
         WidgetType.WEATHER -> "🌤️"
         WidgetType.CALENDAR -> "📅"
         WidgetType.PHOTO -> "🖼️"
-        WidgetType.QUOTES -> "💭"
+        WidgetType.QUOTE -> "💭"
         else -> "Siu"
     }
 }
@@ -95,7 +95,7 @@ private fun getWidgetTitle(type: WidgetType): String {
         WidgetType.WEATHER -> "Weather"
         WidgetType.CALENDAR -> "Calendar"
         WidgetType.PHOTO -> "Photo"
-        WidgetType.QUOTES -> "Quotes"
+        WidgetType.QUOTE -> "Quotes"
         else -> "None"
     }
 }
@@ -105,7 +105,7 @@ private fun getWidgetDescription(type: WidgetType): String {
         WidgetType.WEATHER -> "Current weather conditions"
         WidgetType.CALENDAR -> "Today's events and schedule"
         WidgetType.PHOTO -> "Daily photo gallery"
-        WidgetType.QUOTES -> "Inspirational quotes"
+        WidgetType.QUOTE -> "Inspirational quotes"
         else -> "None"
     }
 }

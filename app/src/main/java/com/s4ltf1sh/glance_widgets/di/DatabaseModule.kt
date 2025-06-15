@@ -45,6 +45,9 @@ object DatabaseModule {
     fun providesQuoteDao(database: AppDatabase) = database.quoteDao()
 
     @Provides
+    fun providesPhotoDao(database: AppDatabase) = database.photoDao()
+
+    @Provides
     @Singleton
     @AppCoroutineScope
     fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(

@@ -2,6 +2,7 @@ package com.s4ltf1sh.glance_widgets.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.s4ltf1sh.glance_widgets.model.Widget
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 
@@ -13,6 +14,16 @@ data class WidgetEntity(
     val lastUpdated: Long = System.currentTimeMillis(),
     val data: String = "" // JSON data specific to widget type
 ) {
+    fun toWidget(): Widget {
+        return Widget(
+            widgetId = widgetId,
+            type = type,
+            size = size,
+            lastUpdated = lastUpdated,
+            data = data
+        )
+    }
+
     companion object {
         val EMPTY = WidgetEntity(
             widgetId = -1,
