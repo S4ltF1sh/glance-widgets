@@ -1,21 +1,25 @@
 package com.s4ltf1sh.glance_widgets.widget.core.small
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.DpSize
+import androidx.glance.GlanceId
 import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.widget.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.photo.PhotoWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.weather.WeatherWidget
 
 class WidgetSmall : BaseAppWidget() {
     override val widgetSize = WidgetSize.SMALL
 
     @Composable
-    override fun WidgetContent(
+    override fun ContentSuccess(
         widget: WidgetEntity,
         widgetId: Int
     ) {
@@ -26,5 +30,20 @@ class WidgetSmall : BaseAppWidget() {
             WidgetType.QUOTES -> QuotesWidget(widget, widgetId)
             else -> WidgetEmpty(widget, widgetId)
         }
+    }
+
+    override fun workerEnqueue(
+        context: Context,
+        size: DpSize,
+        glanceId: GlanceId
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun workerCancel(
+        context: Context,
+        widgetId: Int
+    ) {
+        QuotesWidgetWorker.cancel(context, widgetId)
     }
 }

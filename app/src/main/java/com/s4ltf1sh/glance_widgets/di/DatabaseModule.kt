@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.s4ltf1sh.glance_widgets.db.AppDatabase
 import com.s4ltf1sh.glance_widgets.db.DatabaseManager
 import com.s4ltf1sh.glance_widgets.db.RoomDatabaseManager
-import com.s4ltf1sh.glance_widgets.db.WidgetModelDao
+import com.s4ltf1sh.glance_widgets.db.WidgetDao
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -39,7 +39,10 @@ object DatabaseModule {
             ).build()
 
     @Provides
-    fun providesWidgetModelDao(database: AppDatabase): WidgetModelDao = database.widgetDao()
+    fun providesWidgetModelDao(database: AppDatabase): WidgetDao = database.widgetDao()
+
+    @Provides
+    fun providesQuoteDao(database: AppDatabase) = database.quoteDao()
 
     @Provides
     @Singleton
