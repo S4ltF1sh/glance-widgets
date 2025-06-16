@@ -42,7 +42,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
             context: Context,
             widgetId: Int,
             widgetSize: WidgetSize,
-            repeatTimeInMinutes: Long = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS,
+            repeatTimeInMinutes: Long = 15,
         ) {
             Log.d(TAG, "Enqueuing periodic work for widget ID: $widgetId, Size: $widgetSize")
             val workManager = WorkManager.getInstance(context)
