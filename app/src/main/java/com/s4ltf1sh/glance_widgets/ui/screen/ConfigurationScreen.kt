@@ -39,42 +39,55 @@ internal fun ConfigurationScreen(
             )
         }
 
-        items(WidgetType.entries.filter { it != WidgetType.NONE }) { type ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onTypeSelected(type) },
-                colors = CardDefaults.cardColors(
-                    containerColor = if (type == currentType)
-                        MaterialTheme.colorScheme.primaryContainer
-                    else
-                        MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = getWidgetIcon(type),
-                        style = MaterialTheme.typography.headlineLarge,
-                        modifier = Modifier.padding(end = 16.dp)
-                    )
+        items(WidgetType.getAllMainTypes().filter { it != WidgetType.None }) { type ->
+            WidgetTypeItem(
+                type = type,
+                onTypeSelected = { onTypeSelected(type) },
+                selected = { currentType == type }
+            )
+        }
+    }
+}
 
-                    Column {
-                        Text(
-                            text = getWidgetTitle(type),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = getWidgetDescription(type),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+@Composable
+private fun WidgetTypeItem(
+    type: WidgetType,
+    onTypeSelected: () -> Unit,
+    selected: () -> Boolean
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTypeSelected() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected())
+                MaterialTheme.colorScheme.primaryContainer
+            else
+                MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = getWidgetIcon(type),
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(end = 16.dp)
+            )
+
+            Column {
+                Text(
+                    text = getWidgetTitle(type),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = getWidgetDescription(type),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -82,30 +95,33 @@ internal fun ConfigurationScreen(
 
 private fun getWidgetIcon(type: WidgetType): String {
     return when (type) {
-        WidgetType.WEATHER -> "🌤️"
-        WidgetType.CALENDAR -> "📅"
-        WidgetType.PHOTO -> "🖼️"
-        WidgetType.QUOTE -> "💭"
+        is WidgetType.Weather -> "🌤️"
+        is WidgetType.Calendar -> "📅"
+        is WidgetType.Clock -> "⏰"
+        WidgetType.Photo -> "🖼️"
+        WidgetType.Quote -> "💭"
         else -> "Siu"
     }
 }
 
 private fun getWidgetTitle(type: WidgetType): String {
     return when (type) {
-        WidgetType.WEATHER -> "Weather"
-        WidgetType.CALENDAR -> "Calendar"
-        WidgetType.PHOTO -> "Photo"
-        WidgetType.QUOTE -> "Quotes"
+        is WidgetType.Weather -> "Weather"
+        is WidgetType.Calendar -> "Calendar"
+        is WidgetType.Clock -> "Clock"
+        WidgetType.Photo -> "Photo"
+        WidgetType.Quote -> "Quotes"
         else -> "None"
     }
 }
 
 private fun getWidgetDescription(type: WidgetType): String {
     return when (type) {
-        WidgetType.WEATHER -> "Current weather conditions"
-        WidgetType.CALENDAR -> "Today's events and schedule"
-        WidgetType.PHOTO -> "Daily photo gallery"
-        WidgetType.QUOTE -> "Inspirational quotes"
+        is WidgetType.Weather -> "Current weather conditions"
+        is WidgetType.Calendar -> "Today's events and schedule"
+        is WidgetType.Clock -> "Current time and date"
+        WidgetType.Photo -> "Daily photo gallery"
+        WidgetType.Quote -> "Inspirational quotes"
         else -> "None"
     }
 }

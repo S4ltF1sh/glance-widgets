@@ -17,13 +17,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
+import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.ui.screen.ConfigurationScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.PhotoSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.QuoteSelectionScreen
+import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.clock.digital.ClockDigitalWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -41,8 +44,8 @@ class MainActivity : ComponentActivity() {
         )
 
         val currentType = intent.getStringExtra(BaseAppWidget.KEY_WIDGET_TYPE.name)?.let {
-            WidgetType.valueOf(it)
-        } ?: WidgetType.NONE
+            WidgetType.fromTypeId(it)
+        } ?: WidgetType.None
 
         val currentSize = intent.getStringExtra(BaseAppWidget.KEY_WIDGET_SIZE.name)?.let {
             WidgetSize.valueOf(it)
@@ -55,25 +58,46 @@ class MainActivity : ComponentActivity() {
 
         Log.d("MainActivity", "Widget ID: $widgetId, Type: $currentType, Size: $currentSize")
 
-        mainViewModel.getQuotesBySize(currentSize)
+        // Load data based on current type
+        when (currentType) {
+            is WidgetType.Quote -> mainViewModel.getQuotesBySize(currentSize)
+            is WidgetType.Clock.Digital -> mainViewModel.getClockDigitalsBySize(currentSize)
+            else -> {
+                // Load quotes by default for new widgets
+                mainViewModel.getQuotesBySize(currentSize)
+            }
+        }
 
         setContent {
             val quotes = mainViewModel.quotes.collectAsStateWithLifecycle()
+            val clockDigitals = mainViewModel.clockDigitals.collectAsStateWithLifecycle()
 
             GlancewidgetsTheme {
-                var screenState by remember { mutableStateOf(ScreenState.TYPE_SELECTION) }
+                var screenState by remember { mutableStateOf(getInitialScreenState(currentType)) }
+                var selectedClockType by remember { mutableStateOf<WidgetType.Clock.Digital?>(null) }
 
                 when (screenState) {
                     ScreenState.TYPE_SELECTION -> {
-                        if (currentType == WidgetType.NONE) {
+                        if (currentType == WidgetType.None) {
                             ConfigurationScreen(
                                 widgetId = widgetId,
                                 currentType = currentType,
                                 onTypeSelected = { type ->
-                                    if (type == WidgetType.QUOTE)
-                                        screenState = ScreenState.QUOTE_SELECTION
-                                    else if (type == WidgetType.PHOTO) {
-                                        screenState = ScreenState.PHOTO_SELECTION
+                                    when (type) {
+                                        WidgetType.Quote -> {
+                                            screenState = ScreenState.QUOTE_SELECTION
+                                        }
+                                        WidgetType.Photo -> {
+                                            screenState = ScreenState.PHOTO_SELECTION
+                                        }
+                                        is WidgetType.Clock.Digital -> {
+                                            selectedClockType = type
+                                            mainViewModel.getClockDigitalsBySize(currentSize)
+                                            screenState = ScreenState.CLOCK_DIGITAL_SELECTION
+                                        }
+                                        else -> {
+                                            Log.w("MainActivity", "Unsupported widget type: $type")
+                                        }
                                     }
                                 }
                             )
@@ -114,13 +138,50 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
+                    ScreenState.CLOCK_DIGITAL_SELECTION -> {
+                        val clockType = selectedClockType ?: currentType as? WidgetType.Clock.Digital
+
+                        if (clockType != null) {
+                            ClockDigitalSelectionScreen(
+                                widgetSize = currentSize,
+                                clockType = clockType,
+                                clockDigitalBackgrounds = clockDigitals.value,
+                                onClockDigitalSelected = { clockDigital ->
+                                    ClockDigitalWidgetWorker.enqueue(
+                                        context = this@MainActivity,
+                                        widgetId = widgetId,
+                                        type = clockType,
+                                        widgetSize = currentSize,
+                                        backgroundUrl = clockDigital.backgroundUrl
+                                    )
+
+                                    finish()
+                                }
+                            )
+                        } else {
+                            // Fallback to type selection if no clock type
+                            screenState = ScreenState.TYPE_SELECTION
+                        }
+                    }
                 }
             }
         }
 
-        // Initialize sample quotes if needed
+        // Initialize sample data if needed
         lifecycleScope.launch {
             initializeSampleQuotes()
+            initializeSampleClockDigital()
+        }
+    }
+
+    private fun getInitialScreenState(currentType: WidgetType): ScreenState {
+        return when (currentType) {
+            WidgetType.None -> ScreenState.TYPE_SELECTION
+            WidgetType.Quote -> ScreenState.QUOTE_SELECTION
+            WidgetType.Photo -> ScreenState.PHOTO_SELECTION
+            is WidgetType.Clock.Digital -> ScreenState.CLOCK_DIGITAL_SELECTION
+            else -> ScreenState.TYPE_SELECTION
         }
     }
 
@@ -159,13 +220,65 @@ class MainActivity : ComponentActivity() {
         mainViewModel.insertQuotes(sampleQuotes)
     }
 
+    private fun initializeSampleClockDigital() {
+        // Add sample clock digital backgrounds - replace with your actual clock background images
+        val sampleClockDigitals = listOf(
+            // Type1 backgrounds
+            ClockDigitalEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Clock.Digital.Type1,
+                backgroundUrl = "https://picsum.photos/400/400?random=1"
+            ),
+            ClockDigitalEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Clock.Digital.Type1,
+                backgroundUrl = "https://picsum.photos/800/400?random=2"
+            ),
+            ClockDigitalEntity(
+                size = WidgetSize.LARGE,
+                type = WidgetType.Clock.Digital.Type1,
+                backgroundUrl = "https://picsum.photos/400/400?random=3"
+            ),
 
+            // Type2 backgrounds
+            ClockDigitalEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Clock.Digital.Type2,
+                backgroundUrl = "https://picsum.photos/400/400?random=4"
+            ),
+            ClockDigitalEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Clock.Digital.Type2,
+                backgroundUrl = "https://picsum.photos/800/400?random=5"
+            ),
+            ClockDigitalEntity(
+                size = WidgetSize.LARGE,
+                type = WidgetType.Clock.Digital.Type2,
+                backgroundUrl = "https://picsum.photos/400/400?random=6"
+            ),
+
+            // Additional backgrounds for variety
+            ClockDigitalEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Clock.Digital.Type1,
+                backgroundUrl = "https://picsum.photos/400/400?random=7"
+            ),
+            ClockDigitalEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Clock.Digital.Type2,
+                backgroundUrl = "https://picsum.photos/800/400?random=8"
+            ),
+        )
+
+        mainViewModel.insertClockDigitals(sampleClockDigitals)
+    }
 }
 
 private enum class ScreenState {
     TYPE_SELECTION,
     QUOTE_SELECTION,
-    PHOTO_SELECTION
+    PHOTO_SELECTION,
+    CLOCK_DIGITAL_SELECTION,
 }
 
 @Composable

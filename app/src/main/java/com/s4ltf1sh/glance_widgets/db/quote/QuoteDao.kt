@@ -13,9 +13,6 @@ interface QuoteDao {
     @Query("SELECT * FROM quotes WHERE size = :size ORDER BY createdAt DESC")
     fun getQuotesBySize(size: WidgetSize): Flow<List<QuoteEntity>>
 
-    @Query("SELECT * FROM quotes WHERE size = :size ORDER BY createdAt DESC")
-    fun getQuotesBySizeOnce(size: WidgetSize): List<QuoteEntity>
-
     @Query("SELECT * FROM quotes WHERE id = :quoteId")
     suspend fun getQuoteById(quoteId: Long): QuoteEntity?
 

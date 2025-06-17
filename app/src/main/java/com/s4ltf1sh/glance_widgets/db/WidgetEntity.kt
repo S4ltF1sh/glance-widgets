@@ -27,7 +27,7 @@ data class WidgetEntity(
     companion object {
         val EMPTY = WidgetEntity(
             widgetId = -1,
-            type = WidgetType.NONE,
+            type = WidgetType.None,
             size = WidgetSize.SMALL
         )
     }

@@ -33,7 +33,7 @@ fun WeatherWidget(widget: Widget, widgetId: Int) {
                 actionStartActivity<MainActivity>(
                     parameters = actionParametersOf(
                         BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.name,
+                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
                         BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
                     )
                 )

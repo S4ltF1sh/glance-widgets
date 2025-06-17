@@ -139,7 +139,7 @@ class PhotoSelectionViewModel @Inject constructor(
         val widgetPhotoData = WidgetPhotoData(photoPaths = _uiState.value.selectedPhotos.toList())
 
         val updatedWidget = widget.copy(
-            type = WidgetType.PHOTO,
+            type = WidgetType.Photo,
             data = moshi.adapter(WidgetPhotoData::class.java).toJson(widgetPhotoData),
         )
 

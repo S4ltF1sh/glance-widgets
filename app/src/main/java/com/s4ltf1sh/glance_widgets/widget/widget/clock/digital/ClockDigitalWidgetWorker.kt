@@ -1,4 +1,4 @@
-package com.s4ltf1sh.glance_widgets.widget.widget.quotes
+package com.s4ltf1sh.glance_widgets.widget.widget.clock.digital
 
 import android.content.Context
 import android.util.Log
@@ -16,7 +16,7 @@ import com.s4ltf1sh.glance_widgets.db.WidgetEntity
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
-import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
+import com.s4ltf1sh.glance_widgets.model.clock.digital.WidgetClockDigitalData
 import com.s4ltf1sh.glance_widgets.utils.downloadImageWithCoil
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
@@ -29,18 +29,20 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.delay
 
 @HiltWorker
-class QuotesWidgetWorker @AssistedInject constructor(
+class ClockDigitalWidgetWorker @AssistedInject constructor(
     @Assisted val context: Context,
     @Assisted workerParams: WorkerParameters,
     val moshi: Moshi
 ) : CoroutineWorker(context, workerParams) {
+    
     companion object {
         private const val WIDGET_ID = "widget_id"
         private const val WIDGET_TYPE = "widget_type"
         private const val WIDGET_SIZE = "widget_size"
-        private const val IMAGE_URL = "image_url"
+        private const val BACKGROUND_URL = "background_url"
+        private const val CLOCK_TYPE = "clock_type"
 
-        private const val TAG = "QuotesWidgetWorker"
+        private const val TAG = "ClockDigitalWidgetWorker"
 
         // Retry configuration
         private const val MAX_RETRY_COUNT = 3
@@ -49,26 +51,29 @@ class QuotesWidgetWorker @AssistedInject constructor(
         fun enqueue(
             context: Context,
             widgetId: Int,
-            type: WidgetType,
+            type: WidgetType.Clock.Digital,
             widgetSize: WidgetSize,
-            imageUrl: String
+            backgroundUrl: String
         ) {
-            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $widgetSize, URL: $imageUrl")
+            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $widgetSize, URL: $backgroundUrl")
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
-            val request =
-                OneTimeWorkRequestBuilder<QuotesWidgetWorker>().apply {
-                    addTag(widgetWorkerName)
-                    setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                    setInputData(
-                        Data.Builder()
-                            .putInt(WIDGET_ID, widgetId)
-                            .putString(WIDGET_TYPE, type.typeId)
-                            .putString(WIDGET_SIZE, widgetSize.name)
-                            .putString(IMAGE_URL, imageUrl)
-                            .build()
-                    )
-                }.build()
+            val request = OneTimeWorkRequestBuilder<ClockDigitalWidgetWorker>().apply {
+                addTag(widgetWorkerName)
+                setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                setInputData(
+                    Data.Builder()
+                        .putInt(WIDGET_ID, widgetId)
+                        .putString(WIDGET_TYPE, type.typeId)
+                        .putString(WIDGET_SIZE, widgetSize.name)
+                        .putString(BACKGROUND_URL, backgroundUrl)
+                        .putString(CLOCK_TYPE, when (type) {
+                            is WidgetType.Clock.Digital.Type1 -> "TYPE1"
+                            is WidgetType.Clock.Digital.Type2 -> "TYPE2"
+                        })
+                        .build()
+                )
+            }.build()
 
             workManager.enqueueUniqueWork(
                 uniqueWorkName = widgetWorkerName,
@@ -96,37 +101,38 @@ class QuotesWidgetWorker @AssistedInject constructor(
             null
         }
 
-        val imageUrl = inputData.getString(IMAGE_URL)
+        val backgroundUrl = inputData.getString(BACKGROUND_URL)
+        val clockType = inputData.getString(CLOCK_TYPE)
 
         // Validate inputs
-        if (widgetSize == null || imageUrl.isNullOrEmpty()) {
-            Log.e(TAG, "Missing required data - Size: $widgetSize, URL: $imageUrl")
+        if (widgetSize == null || backgroundUrl.isNullOrEmpty() || clockType.isNullOrEmpty()) {
+            Log.e(TAG, "Missing required data - Size: $widgetSize, URL: $backgroundUrl, ClockType: $clockType")
             context.setWidgetError(
                 glanceId = glanceId,
                 widgetSize = widgetSize ?: WidgetSize.SMALL,
                 message = "Invalid input data",
-                throwable = IllegalArgumentException("Widget size or image URL is missing")
+                throwable = IllegalArgumentException("Widget size, background URL, or clock type is missing")
             )
             return Result.failure()
         }
 
         // Start download process
-        return downloadAndUpdateWidget(widgetId, glanceId, widgetSize, imageUrl)
+        return downloadAndUpdateWidget(widgetId, glanceId, widgetSize, backgroundUrl, clockType)
     }
 
     private suspend fun downloadAndUpdateWidget(
         widgetId: Int,
         glanceId: GlanceId,
         widgetSize: WidgetSize,
-        imageUrl: String
+        backgroundUrl: String,
+        clockType: String
     ): Result {
         try {
-            // Get appropriate dimensions for widget size
             // Download image with retry logic
-            val imagePath = downloadImageWithRetry(url = imageUrl)
+            val backgroundPath = downloadImageWithRetry(url = backgroundUrl)
 
-            if (imagePath.isEmpty()) {
-                Log.e(TAG, "Failed to download image after retries for widget: $widgetId")
+            if (backgroundPath.isEmpty()) {
+                Log.e(TAG, "Failed to download background after retries for widget: $widgetId")
                 context.setWidgetEmpty(
                     glanceId = glanceId,
                     widgetSize = widgetSize
@@ -134,10 +140,10 @@ class QuotesWidgetWorker @AssistedInject constructor(
                 return Result.failure()
             }
 
-            Log.d(TAG, "Image downloaded successfully: $imagePath")
+            Log.d(TAG, "Background downloaded successfully: $backgroundPath")
 
             // Update widget data in repository
-            val updated = updateWidgetData(widgetId, imagePath)
+            val updated = updateWidgetData(widgetId, backgroundPath, clockType)
             if (updated == null) {
                 Log.e(TAG, "Failed to update widget data for widget: $widgetId")
                 context.setWidgetError(
@@ -188,13 +194,13 @@ class QuotesWidgetWorker @AssistedInject constructor(
 
         repeat(MAX_RETRY_COUNT) { attempt ->
             try {
-                val imagePath = context.downloadImageWithCoil(
+                val backgroundPath = context.downloadImageWithCoil(
                     url = url,
-                    force = true // Always force download for quotes
+                    force = true // Always force download for clock backgrounds
                 )
 
-                if (imagePath.isNotEmpty()) {
-                    return imagePath
+                if (backgroundPath.isNotEmpty()) {
+                    return backgroundPath
                 }
             } catch (e: Exception) {
                 lastError = e
@@ -211,18 +217,29 @@ class QuotesWidgetWorker @AssistedInject constructor(
         return ""
     }
 
-    private suspend fun updateWidgetData(widgetId: Int, imagePath: String): WidgetEntity? {
+    private suspend fun updateWidgetData(widgetId: Int, backgroundPath: String, clockType: String): WidgetEntity? {
         return try {
             val repo = WidgetModelRepository.get(context)
             val widget = repo.getWidget(widgetId)
-            val quoteData = WidgetQuoteData(imagePath = imagePath)
+            
+            // Determine the correct WidgetType based on clockType
+            val widgetType = when (clockType) {
+                "TYPE1" -> WidgetType.Clock.Digital.Type1
+                "TYPE2" -> WidgetType.Clock.Digital.Type2
+                else -> {
+                    Log.e(TAG, "Unknown clock type: $clockType")
+                    return null
+                }
+            }
+            
+            val clockData = WidgetClockDigitalData(backgroundPath = backgroundPath)
 
             // Only update data and timestamp, preserve other fields
             val updatedWidget = widget?.copy(
-                type = WidgetType.Quote,
+                type = widgetType,
                 data = moshi
-                    .adapter(WidgetQuoteData::class.java)
-                    .toJson(quoteData),
+                    .adapter(WidgetClockDigitalData::class.java)
+                    .toJson(clockData),
                 lastUpdated = System.currentTimeMillis()
             )
 
@@ -230,7 +247,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Widget not found for ID: $widgetId")
                 null
             } else {
-                Log.d(TAG, "Updating widget data for ID: $widgetId with image: $imagePath")
+                Log.d(TAG, "Updating widget data for ID: $widgetId with background: $backgroundPath")
                 repo.insertWidget(updatedWidget)
                 updatedWidget
             }

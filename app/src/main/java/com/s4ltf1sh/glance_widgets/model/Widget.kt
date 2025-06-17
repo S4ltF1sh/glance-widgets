@@ -13,7 +13,7 @@ data class Widget(
     companion object {
         val EMPTY = Widget(
             widgetId = -1,
-            type = WidgetType.NONE,
+            type = WidgetType.None,
             size = WidgetSize.SMALL
         )
     }

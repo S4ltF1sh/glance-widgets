@@ -1,12 +1,14 @@
 package com.s4ltf1sh.glance_widgets.db
 
 import android.content.Context
+import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalDao
+import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.photo.PhotoDao
-import com.s4ltf1sh.glance_widgets.db.photo.PhotoEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteDao
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.di.AppCoroutineScope
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import dagger.hilt.EntryPoint
@@ -28,6 +30,7 @@ class WidgetModelRepository @Inject internal constructor(
     private val widgetDao: WidgetDao,
     private val quoteDao: QuoteDao,
     private val photoDao: PhotoDao,
+    private val clockDigitalDao: ClockDigitalDao,
     private val moshi: Moshi,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
@@ -71,41 +74,20 @@ class WidgetModelRepository @Inject internal constructor(
         return quoteDao.getQuotesBySize(size)
     }
 
-    suspend fun getQuoteById(quoteId: Long): QuoteEntity? {
-        return quoteDao.getQuoteById(quoteId)
-    }
-
     suspend fun insertQuotes(quotes: List<QuoteEntity>) {
         quoteDao.insertQuotes(quotes)
     }
 
-    fun quoteEntityToJson(quoteEntity: QuoteEntity): String {
-        return quoteAdapter.toJson(quoteEntity)
+    // Clock digital related methods
+    suspend fun insertClockDigital(clockDigital: ClockDigitalEntity) {
+        clockDigitalDao.insertClock(clockDigital)
     }
 
-    fun quoteEntityFromJson(str: String): QuoteEntity? {
-        return quoteAdapter.fromJson(str)
+    suspend fun insertClockDigitals(clockDigitals: List<ClockDigitalEntity>) {
+        clockDigitalDao.insertClocks(clockDigitals)
     }
 
-
-    // Photo related methods
-    suspend fun getPhotoById(photoId: Long): PhotoEntity? {
-        return photoDao.getPhotoById(photoId)
-    }
-
-    suspend fun insertPhoto(photo: PhotoEntity) {
-        photoDao.insertPhoto(photo)
-    }
-
-    suspend fun insertPhotos(photos: List<PhotoEntity>) {
-        photoDao.insertPhotos(photos)
-    }
-
-    suspend fun updatePhoto(photo: PhotoEntity) {
-        photoDao.updatePhoto(photo)
-    }
-
-    suspend fun deletePhoto(photoId: Long) {
-        photoDao.deletePhoto(photoId)
+    fun getClockDigitalsBySize(size: WidgetSize): Flow<List<ClockDigitalEntity>> {
+        return clockDigitalDao.getClocksBySize(size)
     }
 }
