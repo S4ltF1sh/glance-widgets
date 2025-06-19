@@ -2,7 +2,6 @@ package com.s4ltf1sh.glance_widgets.widget.widget.clock.digital
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
@@ -14,28 +13,22 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
-import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.MainActivity
 import com.s4ltf1sh.glance_widgets.model.Widget
+import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.model.clock.digital.WidgetClockDigitalData
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.getImageProvider
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 @Composable
 fun ClockDigitalWidget(
@@ -43,7 +36,7 @@ fun ClockDigitalWidget(
     widgetId: Int
 ) {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-    
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -73,8 +66,8 @@ fun ClockDigitalWidget(
 
             // Overlay with clock information
             when (widget.type) {
-                is WidgetType.Clock.Digital.Type1 -> ClockDigitalType1Layout()
-                is WidgetType.Clock.Digital.Type2 -> ClockDigitalType2Layout()
+                is WidgetType.Clock.Digital.Type1 -> ClockDigitalType1Layout(widget.size)
+                is WidgetType.Clock.Digital.Type2 -> ClockDigitalType2Layout(widget.size)
                 else -> ClockDigitalEmptyState()
             }
         } else {
@@ -83,14 +76,27 @@ fun ClockDigitalWidget(
     }
 }
 
-@Preview
 @Composable
-private fun ClockDigitalType1Layout() {
-    // Type1: Day of week => Day and Month => Time (Column layout)
-    val calendar = Calendar.getInstance()
-    val dayOfWeek = SimpleDateFormat("EEEE", Locale.getDefault()).format(calendar.time)
-    val dayAndMonth = SimpleDateFormat("MMMM d", Locale.getDefault()).format(calendar.time)
-    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+private fun ClockDigitalType1Layout(
+    widgetSize: WidgetSize
+) {
+    val timeTextSize = when (widgetSize) {
+        WidgetSize.SMALL -> 36F
+        WidgetSize.MEDIUM -> 60F
+        WidgetSize.LARGE -> 96F
+    }
+
+    val dateTextSize = when (widgetSize) {
+        WidgetSize.SMALL -> 16F
+        WidgetSize.MEDIUM -> 20F
+        WidgetSize.LARGE -> 32F
+    }
+
+    val dayTextSize = when (widgetSize) {
+        WidgetSize.SMALL -> 24F
+        WidgetSize.MEDIUM -> 32F
+        WidgetSize.LARGE -> 48F
+    }
 
     Box(
         modifier = GlanceModifier
@@ -98,57 +104,30 @@ private fun ClockDigitalType1Layout() {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Day of week
-            Text(
-                text = dayOfWeek,
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(4.dp))
-            
-            // Day and Month
-            Text(
-                text = dayAndMonth,
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            
-            // Time (largest)
-            Text(
-                text = time,
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            )
-        }
+        ClockDigitalType1(
+            modifier = GlanceModifier.fillMaxSize(),
+            timeTextSize = timeTextSize,
+            dateTextSize = dateTextSize,
+            dayTextSize = dayTextSize
+        )
     }
 }
 
-@Preview
 @Composable
-private fun ClockDigitalType2Layout() {
-    // Type2: Time => Day of week, Day and Month (Time first, then info on same line)
-    val calendar = Calendar.getInstance()
-    val dayOfWeek = SimpleDateFormat("EEEE", Locale.getDefault()).format(calendar.time)
-    val dayAndMonth = SimpleDateFormat("MMMM d", Locale.getDefault()).format(calendar.time)
-    val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+private fun ClockDigitalType2Layout(
+    widgetSize: WidgetSize
+) {
+    val timeTextSize = when (widgetSize) {
+        WidgetSize.SMALL -> 60F
+        WidgetSize.MEDIUM -> 60F
+        WidgetSize.LARGE -> 100F
+    }
+
+    val dateTextSize = when (widgetSize) {
+        WidgetSize.SMALL -> 16F
+        WidgetSize.MEDIUM -> 16F
+        WidgetSize.LARGE -> 36F
+    }
 
     Box(
         modifier = GlanceModifier
@@ -156,33 +135,11 @@ private fun ClockDigitalType2Layout() {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Time (largest, displayed first)
-            Text(
-                text = time,
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            )
-            
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            
-            // Day of week and date on same line
-            Text(
-                text = "$dayOfWeek, $dayAndMonth",
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                )
-            )
-        }
+        ClockDigitalType2(
+            modifier = GlanceModifier.fillMaxSize(),
+            timeTextSize = timeTextSize,
+            dateTextSize = dateTextSize
+        )
     }
 }
 

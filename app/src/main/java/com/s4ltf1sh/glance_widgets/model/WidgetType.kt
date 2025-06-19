@@ -148,7 +148,9 @@ sealed interface WidgetType {
 
         fun getAllMainTypes(): List<WidgetType> = listOf(
             None, Photo, Quote,
-            Clock.Digital.Type1, Clock.Analog,
+            Clock.Digital.Type1,
+            Clock.Digital.Type2,
+            Clock.Analog,
             Calendar.Type1,
             Weather.Type1
         )
