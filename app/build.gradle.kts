@@ -91,6 +91,7 @@ dependencies {
     //Coil
     implementation(libs.coil)
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
 
     // Retrofit
     implementation(libs.bundles.retrofit.okhttp3)

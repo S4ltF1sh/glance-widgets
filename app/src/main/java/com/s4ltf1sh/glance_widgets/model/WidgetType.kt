@@ -43,9 +43,18 @@ sealed interface WidgetType {
         }
 
         @Serializable
-        @SerialName("CLOCK_ANALOG")
-        data object Analog : Clock {
-            override val typeId = "CLOCK_ANALOG"
+        sealed interface Analog : Clock {
+            @Serializable
+            @SerialName("CLOCK_ANALOG_TYPE1")
+            data object Type1 : Analog {
+                override val typeId = "CLOCK_ANALOG_TYPE1"
+            }
+
+            @Serializable
+            @SerialName("CLOCK_ANALOG_TYPE2")
+            data object Type2 : Analog {
+                override val typeId = "CLOCK_ANALOG_TYPE2"
+            }
         }
     }
 
@@ -124,7 +133,8 @@ sealed interface WidgetType {
                 registerType(Quote)
                 registerType(Clock.Digital.Type1)
                 registerType(Clock.Digital.Type2)
-                registerType(Clock.Analog)
+                registerType(Clock.Analog.Type1)
+                registerType(Clock.Analog.Type2)
                 registerType(Calendar.Type1)
                 registerType(Calendar.Type2)
                 registerType(Calendar.Type3)
@@ -150,7 +160,8 @@ sealed interface WidgetType {
             None, Photo, Quote,
             Clock.Digital.Type1,
             Clock.Digital.Type2,
-            Clock.Analog,
+            Clock.Analog.Type1,
+            Clock.Analog.Type2,
             Calendar.Type1,
             Weather.Type1
         )

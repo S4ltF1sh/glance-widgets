@@ -110,6 +110,8 @@ private fun getWidgetTitle(type: WidgetType): String {
         is WidgetType.Calendar -> "Calendar"
         WidgetType.Clock.Digital.Type1 -> "Clock - Digital Type 1"
         WidgetType.Clock.Digital.Type2 -> "Clock - Digital Type 2"
+        WidgetType.Clock.Analog.Type1 -> "Clock - Analog Type 2"
+        WidgetType.Clock.Analog.Type2 -> "Clock - Analog Type 2"
         WidgetType.Photo -> "Photo"
         WidgetType.Quote -> "Quotes"
         else -> "None"

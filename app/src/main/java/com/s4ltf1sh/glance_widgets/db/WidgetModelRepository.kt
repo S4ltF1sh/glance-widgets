@@ -1,6 +1,8 @@
 package com.s4ltf1sh.glance_widgets.db
 
 import android.content.Context
+import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogDao
+import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalDao
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.photo.PhotoDao
@@ -31,6 +33,7 @@ class WidgetModelRepository @Inject internal constructor(
     private val quoteDao: QuoteDao,
     private val photoDao: PhotoDao,
     private val clockDigitalDao: ClockDigitalDao,
+    private val clockAnalogDao: ClockAnalogDao,
     private val moshi: Moshi,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
@@ -58,6 +61,9 @@ class WidgetModelRepository @Inject internal constructor(
     fun getWidgetFlow(widgetId: Int) = widgetDao.getWidgetFlow(widgetId).distinctUntilChanged()
 
     suspend fun getWidget(widgetId: Int): WidgetEntity? = widgetDao.getWidget(widgetId)
+
+    suspend fun getWidgetsByType(type: WidgetType): List<WidgetEntity> =
+        widgetDao.getWidgetsByType(type)
 
     suspend fun insertWidget(widget: WidgetEntity): Long = widgetDao.insertWidget(widget)
 
@@ -89,5 +95,18 @@ class WidgetModelRepository @Inject internal constructor(
 
     fun getClockDigitalsBySize(size: WidgetSize): Flow<List<ClockDigitalEntity>> {
         return clockDigitalDao.getClocksBySize(size)
+    }
+
+    // Clock analog related methods
+    suspend fun insertClockAnalog(clockAnalog: ClockAnalogEntity) {
+        clockAnalogDao.insertClock(clockAnalog)
+    }
+
+    suspend fun insertClockAnalogs(clockAnalogs: List<ClockAnalogEntity>) {
+        clockAnalogDao.insertClocks(clockAnalogs)
+    }
+
+    suspend fun getClockAnalogBySize(size: WidgetSize): Flow<List<ClockAnalogEntity>> {
+        return clockAnalogDao.getClocksBySize(size)
     }
 }

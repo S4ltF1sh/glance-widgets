@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.text.format.DateFormat
 import android.util.AttributeSet
 import android.view.View
+import android.widget.RemoteViews
 import java.util.Calendar
 import java.util.TimeZone
 
@@ -18,6 +19,7 @@ import java.util.TimeZone
  * Base clock view that handles time updates like TextClock
  * This is an abstract class - subclasses must implement onDraw
  */
+@RemoteViews.RemoteView
 abstract class BaseClockView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

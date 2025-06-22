@@ -16,16 +16,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
+import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
+import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.ui.screen.ClockAnalogSelectionScreen
+import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ConfigurationScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.PhotoSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.QuoteSelectionScreen
-import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.clock.analog.ClockAnalogWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.clock.digital.ClockDigitalWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,6 +65,7 @@ class MainActivity : ComponentActivity() {
         when (currentType) {
             is WidgetType.Quote -> mainViewModel.getQuotesBySize(currentSize)
             is WidgetType.Clock.Digital -> mainViewModel.getClockDigitalsBySize(currentSize)
+            is WidgetType.Clock.Analog -> mainViewModel.getClockAnalogsBySize(currentSize)
             else -> {
                 // Load quotes by default for new widgets
                 mainViewModel.getQuotesBySize(currentSize)
@@ -71,6 +75,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val quotes = mainViewModel.quotes.collectAsStateWithLifecycle()
             val clockDigitals = mainViewModel.clockDigitals.collectAsStateWithLifecycle()
+            val clockAnalogs = mainViewModel.clockAnalogs.collectAsStateWithLifecycle()
 
             GlancewidgetsTheme {
                 var screenState by remember { mutableStateOf(getInitialScreenState(currentType)) }
@@ -87,14 +92,23 @@ class MainActivity : ComponentActivity() {
                                         WidgetType.Quote -> {
                                             screenState = ScreenState.QUOTE_SELECTION
                                         }
+
                                         WidgetType.Photo -> {
                                             screenState = ScreenState.PHOTO_SELECTION
                                         }
+
                                         is WidgetType.Clock.Digital -> {
                                             selectedClockType = type
                                             mainViewModel.getClockDigitalsBySize(currentSize)
                                             screenState = ScreenState.CLOCK_DIGITAL_SELECTION
                                         }
+
+                                        is WidgetType.Clock.Analog -> {
+                                            // For analog clocks, you might want to show a selection screen
+                                            mainViewModel.getClockAnalogsBySize(currentSize)
+                                            screenState = ScreenState.CLOCK_ANALOG_SELECTION
+                                        }
+
                                         else -> {
                                             Log.w("MainActivity", "Unsupported widget type: $type")
                                         }
@@ -140,7 +154,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     ScreenState.CLOCK_DIGITAL_SELECTION -> {
-                        val clockType = selectedClockType ?: currentType as? WidgetType.Clock.Digital
+                        val clockType =
+                            selectedClockType ?: currentType as? WidgetType.Clock.Digital
 
                         if (clockType != null) {
                             ClockDigitalSelectionScreen(
@@ -164,6 +179,24 @@ class MainActivity : ComponentActivity() {
                             screenState = ScreenState.TYPE_SELECTION
                         }
                     }
+
+                    ScreenState.CLOCK_ANALOG_SELECTION -> {
+                        ClockAnalogSelectionScreen(
+                            widgetSize = currentSize,
+                            clockAnalogBackgrounds = clockAnalogs.value,
+                            onClockAnalogSelected = { clockAnalog ->
+                                ClockAnalogWidgetWorker.enqueue(
+                                    context = this@MainActivity,
+                                    widgetId = widgetId,
+                                    type = clockAnalog.type as WidgetType.Clock.Analog,
+                                    widgetSize = currentSize,
+                                    backgroundUrl = clockAnalog.backgroundUrl
+                                )
+
+                                finish()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -172,6 +205,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             initializeSampleQuotes()
             initializeSampleClockDigital()
+            initializeSampleClockAnalogs()
         }
     }
 
@@ -181,6 +215,7 @@ class MainActivity : ComponentActivity() {
             WidgetType.Quote -> ScreenState.QUOTE_SELECTION
             WidgetType.Photo -> ScreenState.PHOTO_SELECTION
             is WidgetType.Clock.Digital -> ScreenState.CLOCK_DIGITAL_SELECTION
+            is WidgetType.Clock.Analog -> ScreenState.CLOCK_ANALOG_SELECTION
             else -> ScreenState.TYPE_SELECTION
         }
     }
@@ -272,6 +307,35 @@ class MainActivity : ComponentActivity() {
 
         mainViewModel.insertClockDigitals(sampleClockDigitals)
     }
+
+    private fun initializeSampleClockAnalogs() {
+        // Add sample clock analogs - replace with your actual clock images
+        val sampleClockAnalogs = listOf(
+            // Analog clock backgrounds
+            ClockAnalogEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Clock.Analog.Type1,
+                backgroundUrl = "https://picsum.photos/400/400",
+            ),
+            ClockAnalogEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Clock.Analog.Type1,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+            ClockAnalogEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Clock.Analog.Type2,
+                backgroundUrl = "https://picsum.photos/800/400",
+            ),
+            ClockAnalogEntity(
+                size = WidgetSize.LARGE,
+                type = WidgetType.Clock.Analog.Type2,
+                backgroundUrl = "https://picsum.photos/400/400"
+            )
+        )
+
+        mainViewModel.insertClockAnalogs(sampleClockAnalogs)
+    }
 }
 
 private enum class ScreenState {
@@ -279,6 +343,7 @@ private enum class ScreenState {
     QUOTE_SELECTION,
     PHOTO_SELECTION,
     CLOCK_DIGITAL_SELECTION,
+    CLOCK_ANALOG_SELECTION
 }
 
 @Composable

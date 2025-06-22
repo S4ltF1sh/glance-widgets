@@ -3,10 +3,10 @@ package com.s4ltf1sh.glance_widgets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
+import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +26,9 @@ class MainViewModel @Inject constructor(
 
     private val _clockDigitals = MutableStateFlow<List<ClockDigitalEntity>>(emptyList())
     val clockDigitals: StateFlow<List<ClockDigitalEntity>> = _clockDigitals.asStateFlow()
+
+    private val _clockAnalogs = MutableStateFlow<List<ClockAnalogEntity>>(emptyList())
+    val clockAnalogs: StateFlow<List<ClockAnalogEntity>> = _clockAnalogs.asStateFlow()
 
 
     fun getQuotesBySize(size: WidgetSize) = viewModelScope.launch {
@@ -52,5 +55,17 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             widgetRepository.insertClockDigitals(clockDigitals)
         }
+    }
+
+    // Clock Analog operations
+    fun getClockAnalogsBySize(size: WidgetSize) = viewModelScope.launch {
+        widgetRepository.getClockAnalogBySize(size).distinctUntilChanged()
+            .collectLatest { clockAnalogList ->
+                _clockAnalogs.update { clockAnalogList }
+            }
+    }
+
+    fun insertClockAnalogs(clockAnalogs: List<ClockAnalogEntity>) = viewModelScope.launch {
+        widgetRepository.insertClockAnalogs(clockAnalogs)
     }
 }

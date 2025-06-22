@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.widget.RemoteViews
 import com.example.customclock.BaseClockView
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -15,6 +16,7 @@ import java.util.Locale
  * Custom clock view that displays time and date
  * This class handles the drawing of text
  */
+@RemoteViews.RemoteView
 open class BaseDigitalClockView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

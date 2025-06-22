@@ -5,13 +5,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
+import android.widget.RemoteViews
 import androidx.core.graphics.toColorInt
 import com.s4ltf1sh.glance_widgets.ui.customview.clock.BaseDigitalClockView
 
-/**
- * Cozy/Indoor themed clock widget - Style 02
- * Warm white text with softer shadows
- */
+@RemoteViews.RemoteView
 class CozyClockWidget @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
