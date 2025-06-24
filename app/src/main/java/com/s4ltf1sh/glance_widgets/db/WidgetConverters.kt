@@ -8,11 +8,14 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 class WidgetConverters {
-    @TypeConverter
-    fun fromWidgetType(type: WidgetType): String = type.name
 
     @TypeConverter
-    fun toWidgetType(type: String): WidgetType = WidgetType.valueOf(type)
+    fun fromWidgetType(type: WidgetType): String = type.typeId
+
+    @TypeConverter
+    fun toWidgetType(typeId: String): WidgetType {
+        return WidgetType.fromTypeId(typeId) ?: WidgetType.fromLegacyEnum(typeId)
+    }
 
     @TypeConverter
     fun fromWidgetSize(size: WidgetSize): String = size.name

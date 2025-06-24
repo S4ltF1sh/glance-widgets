@@ -12,6 +12,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import coil.compose.SubcomposeAsyncImage
+import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.size.Scale
 import com.s4ltf1sh.glance_widgets.R
@@ -39,6 +40,7 @@ fun WidgetImage(context: Context, image: String?, modifier: Modifier = Modifier)
 fun WidgetImage(image: String?, modifier: Modifier = Modifier) {
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
+            .decoderFactory(SvgDecoder.Factory())
             .data(image)
             .scale(Scale.FILL)
             .crossfade(true)

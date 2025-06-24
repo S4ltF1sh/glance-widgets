@@ -63,7 +63,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                     setInputData(
                         Data.Builder()
                             .putInt(WIDGET_ID, widgetId)
-                            .putString(WIDGET_TYPE, type.name)
+                            .putString(WIDGET_TYPE, type.typeId)
                             .putString(WIDGET_SIZE, widgetSize.name)
                             .putString(IMAGE_URL, imageUrl)
                             .build()
@@ -219,7 +219,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
 
             // Only update data and timestamp, preserve other fields
             val updatedWidget = widget?.copy(
-                type = WidgetType.QUOTE,
+                type = WidgetType.Quote,
                 data = moshi
                     .adapter(WidgetQuoteData::class.java)
                     .toJson(quoteData),

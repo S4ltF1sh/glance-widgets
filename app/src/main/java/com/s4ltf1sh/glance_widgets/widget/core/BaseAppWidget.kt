@@ -37,6 +37,8 @@ import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.clock.analog.ClockAnalogWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.clock.digital.ClockDigitalWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.photo.PhotoWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.weather.WeatherWidget
@@ -59,6 +61,16 @@ abstract class BaseAppWidget : GlanceAppWidget() {
         fun getWidgetWorkerName(widgetId: Int): String {
             return "${WORKER_UNIQUE_NAME}_${widgetId}"
         }
+    }
+
+    override fun onCompositionError(
+        context: Context,
+        glanceId: GlanceId,
+        appWidgetId: Int,
+        throwable: Throwable
+    ) {
+        Log.e("BaseAppWidget", "Composition error for widget ID: $appWidgetId", throwable)
+        super.onCompositionError(context, glanceId, appWidgetId, throwable)
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -93,7 +105,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
                                 // Create new widget with default type
                                 val defaultWidget = WidgetEntity(
                                     widgetId = widgetId,
-                                    type = WidgetType.NONE,
+                                    type = WidgetType.None,
                                     size = widgetSize
                                 )
                                 modelRepo.insertWidget(defaultWidget)
@@ -186,7 +198,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
         WidgetEmpty(
             widget = WidgetEntity(
                 widgetId = widgetId,
-                type = WidgetType.NONE,
+                type = WidgetType.None,
                 size = widgetSize
             ).toWidget(),
             widgetId = widgetId
@@ -196,10 +208,12 @@ abstract class BaseAppWidget : GlanceAppWidget() {
     @Composable
     open fun ContentSuccess(widget: Widget, widgetId: Int) {
         when (widget.type) {
-            WidgetType.WEATHER -> WeatherWidget(widget, widgetId)
-            WidgetType.CALENDAR -> CalendarWidget(widget, widgetId)
-            WidgetType.PHOTO -> PhotoWidget(widget, widgetId)
-            WidgetType.QUOTE -> QuotesWidget(widget, widgetId)
+            is WidgetType.Weather -> WeatherWidget(widget, widgetId)
+            is WidgetType.Calendar -> CalendarWidget(widget, widgetId)
+            is WidgetType.Clock.Digital -> ClockDigitalWidget(widget, widgetId)
+            is WidgetType.Clock.Analog -> ClockAnalogWidget(widget, widgetId)
+            WidgetType.Photo -> PhotoWidget(widget, widgetId)
+            WidgetType.Quote -> QuotesWidget(widget, widgetId)
             else -> WidgetEmpty(widget, widgetId)
         }
     }

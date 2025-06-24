@@ -48,6 +48,12 @@ object DatabaseModule {
     fun providesPhotoDao(database: AppDatabase) = database.photoDao()
 
     @Provides
+    fun providesClockDigitalDao(database: AppDatabase) = database.clockDigitalDao()
+
+    @Provides
+    fun providesClockAnalogDao(database: AppDatabase) = database.clockAnalogDao()
+
+    @Provides
     @Singleton
     @AppCoroutineScope
     fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(

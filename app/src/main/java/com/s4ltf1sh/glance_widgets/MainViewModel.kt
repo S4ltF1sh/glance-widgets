@@ -3,10 +3,13 @@ package com.s4ltf1sh.glance_widgets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
+import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
+import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,10 +19,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val widgetRepository: WidgetModelRepository,
+    private val widgetRepository: WidgetModelRepository
 ) : ViewModel() {
     private val _quotes: MutableStateFlow<List<QuoteEntity>> = MutableStateFlow(emptyList())
     val quotes = _quotes.asStateFlow()
+
+    private val _clockDigitals = MutableStateFlow<List<ClockDigitalEntity>>(emptyList())
+    val clockDigitals: StateFlow<List<ClockDigitalEntity>> = _clockDigitals.asStateFlow()
+
+    private val _clockAnalogs = MutableStateFlow<List<ClockAnalogEntity>>(emptyList())
+    val clockAnalogs: StateFlow<List<ClockAnalogEntity>> = _clockAnalogs.asStateFlow()
+
 
     fun getQuotesBySize(size: WidgetSize) = viewModelScope.launch {
         widgetRepository.getQuotesBySize(size).distinctUntilChanged()
@@ -30,5 +40,32 @@ class MainViewModel @Inject constructor(
 
     fun insertQuotes(quotes: List<QuoteEntity>) = viewModelScope.launch {
         widgetRepository.insertQuotes(quotes)
+    }
+
+    // Clock Digital operations
+    fun getClockDigitalsBySize(size: WidgetSize) {
+        viewModelScope.launch {
+            widgetRepository.getClockDigitalsBySize(size).collect { clockDigitalList ->
+                _clockDigitals.value = clockDigitalList
+            }
+        }
+    }
+
+    fun insertClockDigitals(clockDigitals: List<ClockDigitalEntity>) {
+        viewModelScope.launch {
+            widgetRepository.insertClockDigitals(clockDigitals)
+        }
+    }
+
+    // Clock Analog operations
+    fun getClockAnalogsBySize(size: WidgetSize) = viewModelScope.launch {
+        widgetRepository.getClockAnalogBySize(size).distinctUntilChanged()
+            .collectLatest { clockAnalogList ->
+                _clockAnalogs.update { clockAnalogList }
+            }
+    }
+
+    fun insertClockAnalogs(clockAnalogs: List<ClockAnalogEntity>) = viewModelScope.launch {
+        widgetRepository.insertClockAnalogs(clockAnalogs)
     }
 }

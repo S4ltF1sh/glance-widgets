@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<declare-styleable name="CustomClockView">
+    <attr name="timeTextSize" format="dimension" />
+    <attr name="dateTextSize" format="dimension" />
+    <attr name="timeTextColor" format="color" />
+    <attr name="dateTextColor" format="color" />
+    <attr name="cornerRadius" format="dimension" />
+    <attr name="backgroundAlpha" format="integer" />
+    <attr name="enableShadow" format="boolean" />
+    <attr name="shadowRadius" format="dimension" />
+    <attr name="shadowColor" format="color" />
+    <attr name="format12Hour" format="string" />
+    <attr name="format24Hour" format="string" />
+    <attr name="dateFormat" format="string" />
+    <attr name="backgroundDrawable" format="reference" />
+</declare-styleable>
