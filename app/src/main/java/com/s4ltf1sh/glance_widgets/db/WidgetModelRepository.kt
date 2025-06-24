@@ -62,6 +62,8 @@ class WidgetModelRepository @Inject internal constructor(
 
     suspend fun getWidget(widgetId: Int): WidgetEntity? = widgetDao.getWidget(widgetId)
 
+    suspend fun getAllWidgets(): List<WidgetEntity> = widgetDao.getAllWidgets()
+
     suspend fun getWidgetsByType(type: WidgetType): List<WidgetEntity> =
         widgetDao.getWidgetsByType(type)
 

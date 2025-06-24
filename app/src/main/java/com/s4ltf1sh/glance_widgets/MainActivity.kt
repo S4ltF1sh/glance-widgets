@@ -21,6 +21,7 @@ import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.ui.screen.CalendarSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ClockAnalogSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ConfigurationScreen
@@ -107,6 +108,10 @@ class MainActivity : ComponentActivity() {
                                             // For analog clocks, you might want to show a selection screen
                                             mainViewModel.getClockAnalogsBySize(currentSize)
                                             screenState = ScreenState.CLOCK_ANALOG_SELECTION
+                                        }
+
+                                        is WidgetType.Calendar -> {
+                                            screenState = ScreenState.CALENDAR_SELECTION
                                         }
 
                                         else -> {
@@ -197,6 +202,23 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
+                    ScreenState.CALENDAR_SELECTION -> {
+                        val calendarType = currentType as? WidgetType.Calendar ?: WidgetType.Calendar.Type1
+
+                        CalendarSelectionScreen(
+                            widgetId = widgetId,
+                            widgetSize = currentSize,
+                            calendarType = calendarType,
+                            onBackPressed = {
+                                screenState = ScreenState.TYPE_SELECTION
+                            },
+                            onCalendarConfigured = { calendarData ->
+                                // Calendar đã được configure, đóng activity
+                                finish()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -216,6 +238,7 @@ class MainActivity : ComponentActivity() {
             WidgetType.Photo -> ScreenState.PHOTO_SELECTION
             is WidgetType.Clock.Digital -> ScreenState.CLOCK_DIGITAL_SELECTION
             is WidgetType.Clock.Analog -> ScreenState.CLOCK_ANALOG_SELECTION
+            is WidgetType.Calendar -> ScreenState.CALENDAR_SELECTION
             else -> ScreenState.TYPE_SELECTION
         }
     }
@@ -343,7 +366,8 @@ private enum class ScreenState {
     QUOTE_SELECTION,
     PHOTO_SELECTION,
     CLOCK_DIGITAL_SELECTION,
-    CLOCK_ANALOG_SELECTION
+    CLOCK_ANALOG_SELECTION,
+    CALENDAR_SELECTION
 }
 
 @Composable

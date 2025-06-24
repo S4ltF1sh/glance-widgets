@@ -95,6 +95,43 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove">
         </provider>
+
+        <!-- Receiver to handle calendar changes -->
+        <receiver
+            android:name=".widget.widget.calendar.CalendarChangeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <!-- Date changed (midnight rollover) -->
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <!-- Locale/language changed -->
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+                <!-- Time manually set -->
+                <action android:name="android.intent.action.TIME_SET" />
+                <!-- Timezone changed -->
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <intent-filter>
+                <!-- Calendar provider changed (calendar events updated) -->
+                <action android:name="android.intent.action.PROVIDER_CHANGED" />
+                <data android:scheme="content" />
+                <data android:host="com.android.calendar" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Receiver to handle boot completed and app updated events -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter android:priority="1000">
+                <!-- Device boot completed -->
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!-- App updated -->
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
