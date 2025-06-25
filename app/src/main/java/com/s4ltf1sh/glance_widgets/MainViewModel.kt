@@ -3,6 +3,7 @@ package com.s4ltf1sh.glance_widgets
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
+import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
@@ -67,5 +68,10 @@ class MainViewModel @Inject constructor(
 
     fun insertClockAnalogs(clockAnalogs: List<ClockAnalogEntity>) = viewModelScope.launch {
         widgetRepository.insertClockAnalogs(clockAnalogs)
+    }
+
+    // Calendar operations
+    fun insertCalendars(calendars: List<CalendarEntity>) = viewModelScope.launch {
+        widgetRepository.insertCalendars(calendars)
     }
 }

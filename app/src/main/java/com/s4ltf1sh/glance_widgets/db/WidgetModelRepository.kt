@@ -1,6 +1,8 @@
 package com.s4ltf1sh.glance_widgets.db
 
 import android.content.Context
+import com.s4ltf1sh.glance_widgets.db.calendar.CalendarDao
+import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogDao
 import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalDao
@@ -34,6 +36,7 @@ class WidgetModelRepository @Inject internal constructor(
     private val photoDao: PhotoDao,
     private val clockDigitalDao: ClockDigitalDao,
     private val clockAnalogDao: ClockAnalogDao,
+    private val calendarDao: CalendarDao,
     private val moshi: Moshi,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
@@ -110,5 +113,18 @@ class WidgetModelRepository @Inject internal constructor(
 
     suspend fun getClockAnalogBySize(size: WidgetSize): Flow<List<ClockAnalogEntity>> {
         return clockAnalogDao.getClocksBySize(size)
+    }
+
+    // Calendar related methods
+    fun getCalendarsBySize(size: WidgetSize): Flow<List<CalendarEntity>> {
+        return calendarDao.getCalendarBySize(size)
+    }
+
+    suspend fun insertCalendar(calendar: CalendarEntity) {
+        calendarDao.insertCalendar(calendar)
+    }
+
+    suspend fun insertCalendars(calendars: List<CalendarEntity>) {
+        calendarDao.insertCalendars(calendars)
     }
 }

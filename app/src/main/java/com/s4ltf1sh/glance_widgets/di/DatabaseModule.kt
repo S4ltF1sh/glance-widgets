@@ -54,6 +54,9 @@ object DatabaseModule {
     fun providesClockAnalogDao(database: AppDatabase) = database.clockAnalogDao()
 
     @Provides
+    fun providesCalendarDao(database: AppDatabase) = database.calendarDao()
+
+    @Provides
     @Singleton
     @AppCoroutineScope
     fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(

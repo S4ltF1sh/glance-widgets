@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">glance-widgets</string>
+    <string name="widget_empty_des">Nhấn để thêm widget</string>
+
+    <string name="desc_next_month">Tháng sau</string>
+    <string name="desc_previous_month">Tháng trước</string>
+
+    <!-- Calendar day names (Sunday first order) -->
+    <string-array name="day_names_short">
+        <item>CN</item>
+        <item>T2</item>
+        <item>T3</item>
+        <item>T4</item>
+        <item>T5</item>
+        <item>T6</item>
+        <item>T7</item>
+    </string-array>
+
+    <string-array name="day_names_minimal">
+        <item>C</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+    </string-array>
+</resources>

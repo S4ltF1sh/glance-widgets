@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
@@ -29,6 +30,7 @@ import com.s4ltf1sh.glance_widgets.ui.screen.PhotoSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.QuoteSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
+import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.clock.analog.ClockAnalogWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.clock.digital.ClockDigitalWidgetWorker
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.QuotesWidgetWorker
@@ -204,7 +206,8 @@ class MainActivity : ComponentActivity() {
                     }
 
                     ScreenState.CALENDAR_SELECTION -> {
-                        val calendarType = currentType as? WidgetType.Calendar ?: WidgetType.Calendar.Type1
+                        val calendarType =
+                            currentType as? WidgetType.Calendar ?: WidgetType.Calendar.Type1
 
                         CalendarSelectionScreen(
                             widgetId = widgetId,
@@ -213,8 +216,14 @@ class MainActivity : ComponentActivity() {
                             onBackPressed = {
                                 screenState = ScreenState.TYPE_SELECTION
                             },
-                            onCalendarConfigured = { calendarData ->
-                                // Calendar đã được configure, đóng activity
+                            onCalendarSelected = { calendar ->
+                                CalendarWidgetWorker.enqueue(
+                                    context = this,
+                                    widgetId = widgetId,
+                                    type = calendar.type,
+                                    widgetSize = calendar.size,
+                                    backgroundImageUrl = calendar.backgroundUrl
+                                )
                                 finish()
                             }
                         )
@@ -228,6 +237,7 @@ class MainActivity : ComponentActivity() {
             initializeSampleQuotes()
             initializeSampleClockDigital()
             initializeSampleClockAnalogs()
+            initializeSampleCalendars()
         }
     }
 
@@ -358,6 +368,47 @@ class MainActivity : ComponentActivity() {
         )
 
         mainViewModel.insertClockAnalogs(sampleClockAnalogs)
+    }
+
+    private fun initializeSampleCalendars() {
+        // Add sample calendars - replace with your actual calendar images
+        val sampleCalendars = listOf(
+            // Calendar Type1
+            CalendarEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Calendar.Type1,
+                backgroundUrl = "https://picsum.photos/400/400?random=1"
+            ),
+            CalendarEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Calendar.Type1,
+                backgroundUrl = "https://picsum.photos/800/400?random=2"
+            ),
+            CalendarEntity(
+                size = WidgetSize.LARGE,
+                type = WidgetType.Calendar.Type1,
+                backgroundUrl = "https://picsum.photos/400/400?random=3"
+            ),
+
+            // Calendar Type2
+            CalendarEntity(
+                size = WidgetSize.SMALL,
+                type = WidgetType.Calendar.Type2,
+                backgroundUrl = "https://picsum.photos/400/400?random=4"
+            ),
+            CalendarEntity(
+                size = WidgetSize.MEDIUM,
+                type = WidgetType.Calendar.Type2,
+                backgroundUrl = "https://picsum.photos/800/400?random=5"
+            ),
+            CalendarEntity(
+                size = WidgetSize.LARGE,
+                type = WidgetType.Calendar.Type2,
+                backgroundUrl = "https://picsum.photos/400/400?random=6"
+            )
+        )
+
+        mainViewModel.insertCalendars(sampleCalendars)
     }
 }
 

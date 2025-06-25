@@ -17,7 +17,6 @@ import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
 import com.s4ltf1sh.glance_widgets.db.calendar.WidgetCalendarData
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
-import com.s4ltf1sh.glance_widgets.utils.CalendarUtils
 import com.s4ltf1sh.glance_widgets.utils.downloadImageWithCoil
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
@@ -27,7 +26,6 @@ import com.squareup.moshi.Moshi
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.delay
-import java.util.Calendar
 
 @HiltWorker
 class CalendarWidgetWorker @AssistedInject constructor(
@@ -40,9 +38,6 @@ class CalendarWidgetWorker @AssistedInject constructor(
         private const val WIDGET_ID = "widget_id"
         private const val WIDGET_TYPE = "widget_type"
         private const val WIDGET_SIZE = "widget_size"
-        private const val YEAR = "year"
-        private const val MONTH = "month"
-        private const val SELECTED_DAY = "selected_day"
         private const val BACKGROUND_IMAGE_URL = "background_image_url"
 
         private const val TAG = "CalendarWidgetWorker"
@@ -56,19 +51,12 @@ class CalendarWidgetWorker @AssistedInject constructor(
             widgetId: Int,
             type: WidgetType,
             widgetSize: WidgetSize,
-            year: Int? = null,
-            month: Int? = null,
-            selectedDay: Int? = null,
             backgroundImageUrl: String? = null
         ) {
             Log.d(TAG, "Enqueuing calendar work for widget ID: $widgetId")
 
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
-
-            val currentDate = CalendarUtils.getCurrentDateInfo()
-            val actualYear = year ?: currentDate.first
-            val actualMonth = month ?: currentDate.second
 
             val request = OneTimeWorkRequestBuilder<CalendarWidgetWorker>().apply {
                 addTag(widgetWorkerName)
@@ -78,9 +66,6 @@ class CalendarWidgetWorker @AssistedInject constructor(
                         .putInt(WIDGET_ID, widgetId)
                         .putString(WIDGET_TYPE, type.typeId)
                         .putString(WIDGET_SIZE, widgetSize.name)
-                        .putInt(YEAR, actualYear)
-                        .putInt(MONTH, actualMonth)
-                        .putInt(SELECTED_DAY, selectedDay ?: -1)
                         .putString(BACKGROUND_IMAGE_URL, backgroundImageUrl ?: "")
                         .build()
                 )
@@ -102,8 +87,6 @@ class CalendarWidgetWorker @AssistedInject constructor(
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
 
-            val currentDate = CalendarUtils.getCurrentDateInfo()
-
             val request = OneTimeWorkRequestBuilder<CalendarWidgetWorker>().apply {
                 addTag(widgetWorkerName)
                 setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -111,8 +94,6 @@ class CalendarWidgetWorker @AssistedInject constructor(
                     Data.Builder()
                         .putInt(WIDGET_ID, widgetId)
                         .putString(WIDGET_TYPE, "UPDATE_ONLY")
-                        .putInt(YEAR, currentDate.first)
-                        .putInt(MONTH, currentDate.second)
                         .build()
                 )
             }.build()
@@ -153,10 +134,8 @@ class CalendarWidgetWorker @AssistedInject constructor(
                 WidgetSize.MEDIUM
             }
 
-            val year = inputData.getInt(YEAR, Calendar.getInstance().get(Calendar.YEAR))
-            val month = inputData.getInt(MONTH, Calendar.getInstance().get(Calendar.MONTH) + 1)
-            val selectedDay = inputData.getInt(SELECTED_DAY, -1).takeIf { it != -1 }
-            val backgroundImageUrl = inputData.getString(BACKGROUND_IMAGE_URL)?.takeIf { it.isNotEmpty() }
+            val backgroundImageUrl =
+                inputData.getString(BACKGROUND_IMAGE_URL)?.takeIf { it.isNotEmpty() }
 
             // Download background image if provided
             val backgroundImagePath = backgroundImageUrl?.let { url ->
@@ -164,14 +143,8 @@ class CalendarWidgetWorker @AssistedInject constructor(
             }
 
             // Create calendar data
-            val currentDate = CalendarUtils.getCurrentDateInfo()
             val calendarData = WidgetCalendarData(
-                year = year,
-                month = month,
-                selectedDay = selectedDay,
-                todayDay = if (year == currentDate.first && month == currentDate.second) {
-                    currentDate.third
-                } else null,
+                currentMonth = System.currentTimeMillis(),
                 backgroundPath = backgroundImagePath
             )
 
@@ -239,24 +212,11 @@ class CalendarWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to parse existing calendar data", e)
                 null
             }
-
-            val currentDate = CalendarUtils.getCurrentDateInfo()
-            val year = inputData.getInt(YEAR, currentDate.first)
-            val month = inputData.getInt(MONTH, currentDate.second)
-
             // Update calendar data with new date info
             val updatedCalendarData = existingCalendarData?.copy(
-                year = year,
-                month = month,
-                todayDay = if (year == currentDate.first && month == currentDate.second) {
-                    currentDate.third
-                } else null
+                currentMonth = System.currentTimeMillis()
             ) ?: WidgetCalendarData(
-                year = year,
-                month = month,
-                todayDay = if (year == currentDate.first && month == currentDate.second) {
-                    currentDate.third
-                } else null
+                currentMonth = System.currentTimeMillis()
             )
 
             // Update widget data
@@ -315,7 +275,10 @@ class CalendarWidgetWorker @AssistedInject constructor(
         return null
     }
 
-    private suspend fun updateWidgetData(widgetId: Int, calendarData: WidgetCalendarData): WidgetEntity? {
+    private suspend fun updateWidgetData(
+        widgetId: Int,
+        calendarData: WidgetCalendarData
+    ): WidgetEntity? {
         return try {
             val repo = WidgetModelRepository.get(context)
             val widget = repo.getWidget(widgetId)
