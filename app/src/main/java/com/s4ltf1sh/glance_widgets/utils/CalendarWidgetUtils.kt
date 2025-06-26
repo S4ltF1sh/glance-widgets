@@ -5,7 +5,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-internal object MonthCalendarWidgetUtils {
+internal object CalendarWidgetUtils {
 
     const val ROW_COUNT = 6
     const val COLUMN_COUNT = 7
@@ -48,9 +48,34 @@ internal object MonthCalendarWidgetUtils {
 
     fun formatDateTime(
         timeInMillis: Long,
-        requiredFormat: String): String {
-        val requiredSimpleDateFormat = SimpleDateFormat(requiredFormat,  Locale.getDefault())
+        requiredFormat: String
+    ): String {
+        val requiredSimpleDateFormat = SimpleDateFormat(requiredFormat, Locale.getDefault())
         return requiredSimpleDateFormat.format(Date(timeInMillis))
     }
 
+
+    fun getTodayDayOfMonth(): Int {
+        return Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+    }
+
+    fun getTodayDayOfWeek(): String {
+        return Calendar.getInstance().getDayOfWeekName()
+    }
+}
+
+fun Calendar.getDayOfWeekName(
+    locale: Locale = Locale.getDefault(),
+    fullName: Boolean = true
+): String {
+    val dayOfWeek = get(Calendar.DAY_OF_WEEK)
+    set(Calendar.DAY_OF_WEEK, dayOfWeek + 1) // Convert to 1-based (1=Sunday, 7=Saturday)
+
+    val format = if (fullName) {
+        SimpleDateFormat("EEEE", locale)
+    } else {
+        SimpleDateFormat("EEE", locale)
+    }
+
+    return format.format(time)
 }

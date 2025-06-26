@@ -32,9 +32,9 @@ import com.s4ltf1sh.glance_widgets.model.Widget
 import com.s4ltf1sh.glance_widgets.model.WidgetSize
 import com.s4ltf1sh.glance_widgets.model.WidgetType
 import com.s4ltf1sh.glance_widgets.ui.theme.MonthCalendarColors
-import com.s4ltf1sh.glance_widgets.utils.MonthCalendarWidgetUtils
+import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
 import com.s4ltf1sh.glance_widgets.utils.toColor
-import com.s4ltf1sh.glance_widgets.widget.component.MonthCalendarView
+import com.s4ltf1sh.glance_widgets.widget.widget.calendar.component.CalendarViewDefault
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.getImageProvider
 import com.squareup.moshi.Moshi
@@ -129,9 +129,9 @@ private fun CalendarContent(
             )
         }
 
-        MonthCalendarView(
+        CalendarViewDefault(
             modifier = GlanceModifier.fillMaxSize(),
-            calendar = MonthCalendarWidgetUtils.getCalendar(calendarData.currentMonth)
+            calendar = CalendarWidgetUtils.getCalendar(calendarData.currentMonth)
                 .setSundayAsFirstDayOfWeek(),
             onGoToPreviousMonth = gotoPreviousMonth,
             onGoToNextMonth = gotoNextMonth,
