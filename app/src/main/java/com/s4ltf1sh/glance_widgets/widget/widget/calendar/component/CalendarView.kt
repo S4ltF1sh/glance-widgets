@@ -2,7 +2,6 @@ package com.s4ltf1sh.glance_widgets.widget.widget.calendar.component
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -30,7 +29,9 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.layout.wrapContentHeight
 import androidx.glance.layout.wrapContentSize
+import androidx.glance.layout.wrapContentWidth
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
@@ -40,7 +41,6 @@ import com.s4ltf1sh.glance_widgets.R
 import com.s4ltf1sh.glance_widgets.ui.theme.Dimens
 import com.s4ltf1sh.glance_widgets.ui.theme.MonthCalendarColors
 import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
-import com.s4ltf1sh.glance_widgets.utils.getDayOfWeekName
 import com.s4ltf1sh.glance_widgets.widget.component.GlanceIcon
 import java.util.Calendar
 
@@ -61,7 +61,7 @@ fun CalendarViewDefault(
         "Sat"
     ), // Default English names
     monthCalendarColors: MonthCalendarColors,
-    selectedDateBackground: (() -> ImageProvider)? = null
+    selectedDateBackground: ImageProvider
 ) {
     val context = LocalContext.current
 
@@ -78,7 +78,8 @@ fun CalendarViewDefault(
         )
 
         DaysOfWeek(
-            monthCalendarColors = monthCalendarColors,
+            textColor = Color.White,
+            textSize = Dimens.smallFontSize,
             dayOfWeekNames = dayOfWeekNames
         )
 
@@ -93,62 +94,10 @@ fun CalendarViewDefault(
     }
 }
 
-@Composable
-fun CalendarSingleDayView(
-    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
-    calendar: Calendar,
-    monthCalendarColors: MonthCalendarColors,
-    spaceBetween: Dp = 20.dp,
-    dayOfWeekTextSize: TextUnit,
-    dayOfMonthTextSize: TextUnit,
-    onGoToNextMonth: () -> Unit,
-    onGoToPreviousMonth: () -> Unit
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = calendar.getDayOfWeekName(fullName = true),
-            style = TextStyle(
-                fontSize = dayOfWeekTextSize,
-                textAlign = TextAlign.Center,
-                color = monthCalendarColors.dateTextColor
-            ),
-            modifier = GlanceModifier.fillMaxWidth().padding(Dimens.defaultPadding)
-        )
-
-        Spacer(modifier = GlanceModifier.height(spaceBetween))
-
-        CalendarHeaderDefault(
-            context = LocalContext.current,
-            calendar = calendar,
-            onGoToPreviousMonth = onGoToPreviousMonth,
-            onGoToNextMonth = onGoToNextMonth,
-            textColor = Color.White,
-            textSize = Dimens.mediumFontSize,
-            iconSize = Dimens.imageSize,
-            iconColor = Color.White
-        )
-
-        Spacer(modifier = GlanceModifier.height(spaceBetween))
-
-        Text(
-            text = CalendarWidgetUtils.getTodayDayOfMonth().toString(),
-            style = TextStyle(
-                fontSize = dayOfMonthTextSize,
-                textAlign = TextAlign.Center,
-                color = monthCalendarColors.dateTextColor
-            ),
-            modifier = GlanceModifier.fillMaxWidth().padding(Dimens.defaultPadding)
-        )
-    }
-}
-
 @SuppressLint("RestrictedApi")
 @Composable
 fun CurrentDayWithLocationVertical(
-    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    modifier: GlanceModifier = GlanceModifier,
     dayOfWeek: String,
     dayOfWeekColor: Color = Color.White,
     dayOfWeekSize: TextUnit,
@@ -168,9 +117,10 @@ fun CurrentDayWithLocationVertical(
             style = TextStyle(
                 fontSize = dayOfWeekSize,
                 textAlign = TextAlign.Center,
-                color = ColorProvider(dayOfWeekColor)
+                color = ColorProvider(dayOfWeekColor),
+                fontWeight = FontWeight.Medium
             ),
-            modifier = GlanceModifier.fillMaxWidth()
+            modifier = GlanceModifier.wrapContentWidth()
         )
 
         Text(
@@ -178,18 +128,19 @@ fun CurrentDayWithLocationVertical(
             style = TextStyle(
                 fontSize = dayOfMonthSize,
                 textAlign = TextAlign.Center,
-                color = ColorProvider(dayOfMonthColor)
+                color = ColorProvider(dayOfMonthColor),
+                fontWeight = FontWeight.Bold
             ),
-            modifier = GlanceModifier.fillMaxWidth()
+            modifier = GlanceModifier.wrapContentWidth()
         )
 
         Spacer(modifier = GlanceModifier.height(Dimens.padding10))
 
         Location(
+            modifier = GlanceModifier,
             location = location,
             locationColor = locationColor,
-            locationSize = locationSize,
-            modifier = GlanceModifier.fillMaxWidth()
+            locationSize = locationSize
         )
     }
 }
@@ -197,7 +148,7 @@ fun CurrentDayWithLocationVertical(
 @SuppressLint("RestrictedApi")
 @Composable
 fun CurrentDayWithLocationHorizontal(
-    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    modifier: GlanceModifier = GlanceModifier,
     dayOfWeek: String,
     dayOfWeekColor: Color = Color.White,
     dayOfWeekSize: TextUnit,
@@ -224,11 +175,10 @@ fun CurrentDayWithLocationHorizontal(
                 fontSize = dayOfMonthSize,
                 textAlign = TextAlign.Start,
                 color = ColorProvider(dayOfMonthColor)
-            ),
-            modifier = GlanceModifier.fillMaxHeight()
+            )
         )
 
-        Spacer(modifier = GlanceModifier.height(Dimens.padding10))
+        Spacer(modifier = GlanceModifier.width(Dimens.padding10))
 
         Column(
             horizontalAlignment = Alignment.Start
@@ -239,8 +189,7 @@ fun CurrentDayWithLocationHorizontal(
                     fontSize = dayOfWeekSize,
                     textAlign = TextAlign.Start,
                     color = ColorProvider(dayOfWeekColor)
-                ),
-                modifier = GlanceModifier.fillMaxHeight()
+                )
             )
 
             Text(
@@ -250,11 +199,11 @@ fun CurrentDayWithLocationHorizontal(
                     textAlign = TextAlign.Start,
                     color = ColorProvider(monthNameColor)
                 ),
-                modifier = GlanceModifier.fillMaxWidth()
+                modifier = GlanceModifier.defaultWeight()
             )
         }
 
-        Spacer(modifier = GlanceModifier.fillMaxWidth())
+        Spacer(modifier = GlanceModifier.defaultWeight())
 
         Column(
             horizontalAlignment = Alignment.End
@@ -292,7 +241,8 @@ private fun Location(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier
     ) {
         Image(
             provider = ImageProvider(R.drawable.ic_location),
@@ -311,7 +261,7 @@ private fun Location(
                 textAlign = TextAlign.Start,
                 color = ColorProvider(locationColor)
             ),
-            modifier = modifier.padding(Dimens.defaultPadding)
+            modifier = GlanceModifier.wrapContentWidth()
         )
     }
 }
@@ -320,34 +270,36 @@ private fun Location(
 @Composable
 fun CalendarHeaderDefault(
     context: Context,
-    modifier: GlanceModifier = GlanceModifier.fillMaxWidth(),
+    modifier: GlanceModifier = GlanceModifier,
     calendar: Calendar,
-    textSize: TextUnit = Dimens.mediumFontSize,
+    textSize: TextUnit,
     textColor: Color,
-    iconSize: Dp = Dimens.imageSize,
+    iconSize: Dp,
     iconColor: Color,
-    onGoToPreviousMonth: () -> Unit,
-    onGoToNextMonth: () -> Unit
+    onGoToPreviousMonth: (() -> Unit)? = null,
+    onGoToNextMonth: (() -> Unit)? = null,
+    showActionButtons: Boolean = true
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        GlanceIcon(
-            modifier = getHeaderImageModifier(
+        if (onGoToPreviousMonth != null && showActionButtons) {
+            GlanceIcon(
+                modifier = getHeaderImageModifier(
+                    size = iconSize,
+                    onClick = onGoToPreviousMonth
+                ),
+                resId = R.drawable.ic_widget_arrow_left,
+                tint = iconColor,
                 size = iconSize,
-                onClick = onGoToPreviousMonth
-            ),
-            resId = R.drawable.ic_widget_arrow_left,
-            tint = iconColor,
-            size = iconSize,
-            onClick = onGoToPreviousMonth,
+                onClick = onGoToPreviousMonth,
+                contentDescription = getResString(context, R.string.desc_previous_month)
+            )
 
-            contentDescription = getResString(context, R.string.desc_previous_month)
-        )
-
-        Spacer(modifier = GlanceModifier.fillMaxWidth())
+            Spacer(modifier = GlanceModifier.defaultWeight())
+        }
 
         Text(
             text = getFormatString(
@@ -357,23 +309,26 @@ fun CalendarHeaderDefault(
             style = TextStyle(
                 fontSize = textSize,
                 textAlign = TextAlign.Center,
-                color = ColorProvider(textColor)
+                color = ColorProvider(textColor),
+                fontWeight = FontWeight.Medium
             )
         )
 
-        Spacer(modifier = GlanceModifier.fillMaxWidth())
+        if (onGoToNextMonth != null && showActionButtons) {
+            Spacer(modifier = GlanceModifier.defaultWeight())
 
-        GlanceIcon(
-            modifier = getHeaderImageModifier(
+            GlanceIcon(
+                modifier = getHeaderImageModifier(
+                    size = iconSize,
+                    onClick = onGoToNextMonth
+                ),
+                resId = R.drawable.ic_widget_arrow_right,
+                tint = iconColor,
                 size = iconSize,
-                onClick = onGoToNextMonth
-            ),
-            resId = R.drawable.ic_widget_arrow_right,
-            tint = iconColor,
-            size = iconSize,
-            onClick = onGoToNextMonth,
-            contentDescription = getResString(context, R.string.desc_next_month)
-        )
+                onClick = onGoToNextMonth,
+                contentDescription = getResString(context, R.string.desc_next_month)
+            )
+        }
     }
 }
 
@@ -388,12 +343,13 @@ private fun getFormatString(timeInMillis: Long, requiredFormat: String): String 
     )
 }
 
+@SuppressLint("RestrictedApi")
 @Composable
 fun DaysOfWeek(
-    monthCalendarColors: MonthCalendarColors,
+    textColor: Color,
+    textSize: TextUnit,
     dayOfWeekNames: List<String>
 ) {
-    // Đảm bảo dayOfWeekNames có đủ 7 phần tử và luôn theo thứ tự Sunday first
     val safeWeekNames = if (dayOfWeekNames.size >= 7) {
         dayOfWeekNames.take(7)
     } else {
@@ -402,14 +358,13 @@ fun DaysOfWeek(
     }
 
     Row(modifier = GlanceModifier.fillMaxWidth()) {
-        // Hiển thị theo thứ tự cố định: Sunday -> Monday -> ... -> Saturday
         for (i in 0 until CalendarWidgetUtils.COLUMN_COUNT) {
             Text(
                 modifier = GlanceModifier.defaultWeight(),
                 text = safeWeekNames[i], // Index 0=Sunday, 1=Monday, ..., 6=Saturday
                 style = TextStyle(
-                    color = monthCalendarColors.weekDayTextColor,
-                    fontSize = Dimens.mediumFontSize,
+                    color = ColorProvider(textColor),
+                    fontSize = textSize,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center
                 )
@@ -420,23 +375,20 @@ fun DaysOfWeek(
 
 @Composable
 fun DatesDefault(
-    modifier: GlanceModifier = GlanceModifier.fillMaxSize().padding(top = Dimens.padding10),
+    modifier: GlanceModifier = GlanceModifier,
     calendar: Calendar,
     dateTextSize: TextUnit,
     focusedDateColor: Color,
     unfocusedDateColor: Color = Color.White.copy(alpha = 0.6F),
     selectedDateColor: Color = focusedDateColor,
     showUnfocusedDates: Boolean = true,
-    selectedDateBackground: (() -> ImageProvider)? = null,
+    selectedDateBackground: ImageProvider,
     onDateClick: Action? = null
 ) {
     val todayCalendar = CalendarWidgetUtils.getCalendar()
     val dateCalendar = calendar.clone() as Calendar
     dateCalendar.set(Calendar.DAY_OF_MONTH, 1)
     CalendarWidgetUtils.setTimeToBeginningOfDay(dateCalendar)
-
-    val currentMonthInt = dateCalendar.get(Calendar.MONTH)
-    val currentYear = dateCalendar.get(Calendar.YEAR)
 
     // Tính offset của ngày đầu tháng so với Sunday (0=Sunday, 1=Monday, ...)
     val firstDayOfMonthOffset = (dateCalendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY + 7) % 7
@@ -448,14 +400,10 @@ fun DatesDefault(
     val prevMonthCalendar = dateCalendar.clone() as Calendar
     prevMonthCalendar.add(Calendar.MONTH, -1)
     val daysInPrevMonth = prevMonthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-    val prevMonthInt = prevMonthCalendar.get(Calendar.MONTH)
-    val prevYear = prevMonthCalendar.get(Calendar.YEAR)
 
     // Tháng sau
     val nextMonthCalendar = dateCalendar.clone() as Calendar
     nextMonthCalendar.add(Calendar.MONTH, 1)
-    val nextMonthInt = nextMonthCalendar.get(Calendar.MONTH)
-    val nextYear = nextMonthCalendar.get(Calendar.YEAR)
 
     // Tạo array để chứa tất cả các ngày cần hiển thị (42 ô = 6 tuần × 7 ngày)
     val totalCells = CalendarWidgetUtils.ROW_COUNT * CalendarWidgetUtils.COLUMN_COUNT
@@ -525,7 +473,6 @@ fun DatesDefault(
                     DateTextView(
                         dateString = dateItem?.dayString ?: "",
                         isToday = isToday,
-                        isCurrentMonth = dateItem?.isCurrentMonth == true,
                         onClick = onDateClick,
                         textSize = dateTextSize,
                         textColor = if (isToday)
@@ -550,37 +497,53 @@ private data class DateItem(
 
 @SuppressLint("RestrictedApi")
 @Composable
-private fun RowScope.DateTextView(
+fun RowScope.DateTextView(
     dateString: String,
     isToday: Boolean,
-    isCurrentMonth: Boolean,
     onClick: Action?,
     textSize: TextUnit,
     textColor: Color,
-    selectedDateBackground: (() -> ImageProvider)? = null
+    selectedDateBackground: ImageProvider
+) {
+    return DateTextView(
+        modifier = getDateTextParentModifier(dateString.isNotEmpty(), onClick),
+        dateString = dateString,
+        isToday = isToday,
+        onClick = onClick,
+        textSize = textSize,
+        textColor = textColor,
+        selectedDateBackground = selectedDateBackground
+    )
+}
+
+@SuppressLint("RestrictedApi")
+@Composable
+fun RowScope.DateTextView(
+    modifier: GlanceModifier,
+    dateString: String,
+    isToday: Boolean,
+    onClick: Action?,
+    textSize: TextUnit,
+    textColor: Color,
+    selectedDateBackground: ImageProvider
 ) {
     val hasDate = dateString.isNotEmpty()
 
     Box(
-        modifier = getDateTextParentModifier(hasDate, onClick),
+        modifier = modifier.padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
         // Background cho selected date
-        Log.d(
-            "DateTextView",
-            "isToday: $isToday, hasDate: $hasDate, selectedDateBackground: $selectedDateBackground"
-        )
-        if (isToday && hasDate && selectedDateBackground != null) {
+        if (isToday && hasDate) {
             Image(
-                provider = selectedDateBackground(),
+                provider = selectedDateBackground,
                 contentDescription = null,
                 modifier = GlanceModifier.fillMaxSize()
             )
         }
 
         Text(
-            modifier = getDateTextChildModifier(hasDate)
-                .padding(Dimens.padding2),
+            modifier = getDateTextChildModifier(hasDate),
             text = dateString,
             style = TextStyle(
                 color = ColorProvider(textColor),
@@ -589,18 +552,6 @@ private fun RowScope.DateTextView(
             ),
             maxLines = 1
         )
-    }
-}
-
-private fun getDateTextColor(
-    isToday: Boolean,
-    isCurrentMonth: Boolean,
-    monthCalendarColors: MonthCalendarColors
-): ColorProvider {
-    return when {
-        isToday -> monthCalendarColors.todayDateTextColor
-        isCurrentMonth -> monthCalendarColors.dateTextColor
-        else -> monthCalendarColors.unfocusedDateTextColor // Tháng trước/sau
     }
 }
 
@@ -636,15 +587,3 @@ private fun getHeaderImageModifier(
             horizontal = Dimens.defaultHalfPadding
         )
 }
-
-private fun getArrowLeftIcon(context: Context): ImageProvider {
-    val icon = Icon.createWithResource(context, R.drawable.ic_widget_arrow_left)
-    return ImageProvider(icon)
-}
-
-private fun getArrowRightIcon(context: Context): ImageProvider {
-    val icon = Icon.createWithResource(context, R.drawable.ic_widget_arrow_right)
-    return ImageProvider(icon)
-}
-
-private fun getImageProvider(drawableResId: Int) = ImageProvider(drawableResId)

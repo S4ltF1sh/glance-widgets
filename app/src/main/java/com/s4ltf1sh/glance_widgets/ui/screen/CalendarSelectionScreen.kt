@@ -34,29 +34,29 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
 
 @Composable
 fun CalendarSelectionScreen(
     widgetId: Int,
-    widgetSize: WidgetSize,
-    calendarType: WidgetType.Calendar,
+    glanceWidgetSize: GlanceWidgetSize,
+    calendarType: GlanceWidgetType.Calendar,
     onBackPressed: () -> Unit,
-    onCalendarSelected: (CalendarEntity) -> Unit
+    onCalendarSelected: (GlanceCalendarEntity) -> Unit
 ) {
     val viewModel: CalendarSelectionViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadCalendars(widgetSize)
+        viewModel.loadCalendars(glanceWidgetSize)
     }
 
     Content(
         uiState = uiState,
-        widgetSize = widgetSize,
+        glanceWidgetSize = glanceWidgetSize,
         calendarType = calendarType,
         onBackPressed = onBackPressed,
         onItemClicked = onCalendarSelected
@@ -67,10 +67,10 @@ fun CalendarSelectionScreen(
 @Composable
 private fun Content(
     uiState: CalendarSelectionUiState,
-    widgetSize: WidgetSize,
-    calendarType: WidgetType.Calendar,
+    glanceWidgetSize: GlanceWidgetSize,
+    calendarType: GlanceWidgetType.Calendar,
     onBackPressed: () -> Unit,
-    onItemClicked: (CalendarEntity) -> Unit
+    onItemClicked: (GlanceCalendarEntity) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -103,8 +103,8 @@ private fun Content(
             ) { calendar ->
                 CalendarItem(
                     calendar = calendar,
-                    widgetSize = widgetSize,
-                    widgetType = calendarType,
+                    glanceWidgetSize = glanceWidgetSize,
+                    glanceWidgetType = calendarType,
                     onClick = {
                         onItemClicked(calendar)
                     }
@@ -116,15 +116,15 @@ private fun Content(
 
 @Composable
 private fun CalendarItem(
-    calendar: CalendarEntity,
-    widgetSize: WidgetSize,
-    widgetType: WidgetType.Calendar,
+    calendar: GlanceCalendarEntity,
+    glanceWidgetSize: GlanceWidgetSize,
+    glanceWidgetType: GlanceWidgetType.Calendar,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(getAspectRatio(widgetSize))
+            .aspectRatio(getAspectRatio(glanceWidgetSize))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -152,7 +152,7 @@ private fun CalendarItem(
                         )
                     )
                     Text(
-                        text = widgetType.typeId,
+                        text = glanceWidgetType.typeId,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         style = MaterialTheme.typography.labelSmall
                     )
@@ -162,14 +162,14 @@ private fun CalendarItem(
     }
 }
 
-private fun getGridCellSize(widgetSize: WidgetSize): Dp = when (widgetSize) {
-    WidgetSize.SMALL -> 120.dp
-    WidgetSize.MEDIUM -> 160.dp
-    WidgetSize.LARGE -> 200.dp
+private fun getGridCellSize(glanceWidgetSize: GlanceWidgetSize): Dp = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 120.dp
+    GlanceWidgetSize.MEDIUM -> 160.dp
+    GlanceWidgetSize.LARGE -> 200.dp
 }
 
-private fun getAspectRatio(widgetSize: WidgetSize): Float = when (widgetSize) {
-    WidgetSize.SMALL -> 1f
-    WidgetSize.MEDIUM -> 2f
-    WidgetSize.LARGE -> 1f
+private fun getAspectRatio(glanceWidgetSize: GlanceWidgetSize): Float = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 1f
+    GlanceWidgetSize.MEDIUM -> 2f
+    GlanceWidgetSize.LARGE -> 1f
 }

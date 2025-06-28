@@ -17,13 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 
 @Composable
 internal fun ConfigurationScreen(
     widgetId: Int,
-    currentType: WidgetType,
-    onTypeSelected: (WidgetType) -> Unit
+    currentType: GlanceWidgetType,
+    onTypeSelected: (GlanceWidgetType) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -39,7 +39,7 @@ internal fun ConfigurationScreen(
             )
         }
 
-        items(WidgetType.getAllMainTypes().filter { it != WidgetType.None }) { type ->
+        items(GlanceWidgetType.getAllMainTypes().filter { it != GlanceWidgetType.None }) { type ->
             WidgetTypeItem(
                 type = type,
                 onTypeSelected = { onTypeSelected(type) },
@@ -51,7 +51,7 @@ internal fun ConfigurationScreen(
 
 @Composable
 private fun WidgetTypeItem(
-    type: WidgetType,
+    type: GlanceWidgetType,
     onTypeSelected: () -> Unit,
     selected: () -> Boolean
 ) {
@@ -93,38 +93,38 @@ private fun WidgetTypeItem(
     }
 }
 
-private fun getWidgetIcon(type: WidgetType): String {
+private fun getWidgetIcon(type: GlanceWidgetType): String {
     return when (type) {
-        is WidgetType.Weather -> "🌤️"
-        is WidgetType.Calendar -> "📅"
-        is WidgetType.Clock -> "⏰"
-        WidgetType.Photo -> "🖼️"
-        WidgetType.Quote -> "💭"
+        is GlanceWidgetType.Weather -> "🌤️"
+        is GlanceWidgetType.Calendar -> "📅"
+        is GlanceWidgetType.Clock -> "⏰"
+        GlanceWidgetType.Photo -> "🖼️"
+        GlanceWidgetType.Quote -> "💭"
         else -> "Siu"
     }
 }
 
-private fun getWidgetTitle(type: WidgetType): String {
+private fun getWidgetTitle(type: GlanceWidgetType): String {
     return when (type) {
-        is WidgetType.Weather -> "Weather"
-        is WidgetType.Calendar -> "Calendar"
-        WidgetType.Clock.Digital.Type1 -> "Clock - Digital Type 1"
-        WidgetType.Clock.Digital.Type2 -> "Clock - Digital Type 2"
-        WidgetType.Clock.Analog.Type1 -> "Clock - Analog Type 2"
-        WidgetType.Clock.Analog.Type2 -> "Clock - Analog Type 2"
-        WidgetType.Photo -> "Photo"
-        WidgetType.Quote -> "Quotes"
+        is GlanceWidgetType.Weather -> "Weather"
+        is GlanceWidgetType.Calendar -> "Calendar"
+        GlanceWidgetType.Clock.Digital.Type1Glance -> "Clock - Digital Type 1"
+        GlanceWidgetType.Clock.Digital.Type2Glance -> "Clock - Digital Type 2"
+        GlanceWidgetType.Clock.Analog.Type1Glance -> "Clock - Analog Type 2"
+        GlanceWidgetType.Clock.Analog.Type2Glance -> "Clock - Analog Type 2"
+        GlanceWidgetType.Photo -> "Photo"
+        GlanceWidgetType.Quote -> "Quotes"
         else -> "None"
     }
 }
 
-private fun getWidgetDescription(type: WidgetType): String {
+private fun getWidgetDescription(type: GlanceWidgetType): String {
     return when (type) {
-        is WidgetType.Weather -> "Current weather conditions"
-        is WidgetType.Calendar -> "Today's events and schedule"
-        is WidgetType.Clock -> "Current time and date"
-        WidgetType.Photo -> "Daily photo gallery"
-        WidgetType.Quote -> "Inspirational quotes"
+        is GlanceWidgetType.Weather -> "Current weather conditions"
+        is GlanceWidgetType.Calendar -> "Today's events and schedule"
+        is GlanceWidgetType.Clock -> "Current time and date"
+        GlanceWidgetType.Photo -> "Daily photo gallery"
+        GlanceWidgetType.Quote -> "Inspirational quotes"
         else -> "None"
     }
 }

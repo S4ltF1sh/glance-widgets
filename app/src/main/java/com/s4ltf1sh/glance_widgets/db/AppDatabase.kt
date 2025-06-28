@@ -3,37 +3,37 @@ package com.s4ltf1sh.glance_widgets.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.s4ltf1sh.glance_widgets.db.calendar.CalendarDao
-import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogDao
-import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalDao
-import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
-import com.s4ltf1sh.glance_widgets.db.photo.PhotoDao
-import com.s4ltf1sh.glance_widgets.db.photo.PhotoEntity
-import com.s4ltf1sh.glance_widgets.db.quote.QuoteDao
-import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
+import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarDao
+import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogDao
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalDao
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
+import com.s4ltf1sh.glance_widgets.db.photo.GlancePhotoDao
+import com.s4ltf1sh.glance_widgets.db.photo.GlancePhotoEntity
+import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteDao
+import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
 
 @Database(
     entities = [
-        WidgetEntity::class,
-        QuoteEntity::class,
-        PhotoEntity::class,
-        ClockDigitalEntity::class,
-        ClockAnalogEntity::class,
-        CalendarEntity::class
+        GlanceWidgetEntity::class,
+        GlanceQuoteEntity::class,
+        GlancePhotoEntity::class,
+        GlanceClockDigitalEntity::class,
+        GlanceClockAnalogEntity::class,
+        GlanceCalendarEntity::class
     ],
     version = 2,
     exportSchema = false
 )
 @TypeConverters(WidgetConverters::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun widgetDao(): WidgetDao
-    abstract fun quoteDao(): QuoteDao
-    abstract fun photoDao(): PhotoDao
-    abstract fun clockDigitalDao(): ClockDigitalDao
-    abstract fun clockAnalogDao(): ClockAnalogDao
-    abstract fun calendarDao(): CalendarDao
+    abstract fun glanceWidgetDao(): GlanceWidgetDao
+    abstract fun glanceQuoteDao(): GlanceQuoteDao
+    abstract fun glancePhotoDao(): GlancePhotoDao
+    abstract fun glanceClockDigitalDao(): GlanceClockDigitalDao
+    abstract fun glanceClockAnalogDao(): GlanceClockAnalogDao
+    abstract fun glanceCalendarDao(): GlanceCalendarDao
 }
 
 fun RoomDatabase.wipeAndReinitializeData() = runInTransaction {

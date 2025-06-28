@@ -3,7 +3,7 @@ package com.s4ltf1sh.glance_widgets.widget.core
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -12,7 +12,7 @@ abstract class BaseWidgetReceiver : GlanceAppWidgetReceiver() {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Default + job)
 
-    abstract val widgetSize: WidgetSize
+    abstract val glanceWidgetSize: GlanceWidgetSize
 
     override fun onUpdate(
         context: Context,

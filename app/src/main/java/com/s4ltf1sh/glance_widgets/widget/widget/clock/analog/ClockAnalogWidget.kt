@@ -20,8 +20,8 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.model.Widget
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.model.clock.analog.WidgetClockAnalogData
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.getImageProvider
@@ -30,7 +30,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 @Composable
 fun ClockAnalogWidget(
-    widget: Widget,
+    glanceWidget: GlanceWidget,
     widgetId: Int
 ) {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -43,15 +43,15 @@ fun ClockAnalogWidget(
                 actionStartActivity<MainActivity>(
                     parameters = actionParametersOf(
                         BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
-                        BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
+                        BaseAppWidget.KEY_WIDGET_TYPE to glanceWidget.type.typeId,
+                        BaseAppWidget.KEY_WIDGET_SIZE to glanceWidget.size.name
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (widget.data.isNotEmpty()) {
-            val clockData = moshi.adapter(WidgetClockAnalogData::class.java).fromJson(widget.data)
+        if (glanceWidget.data.isNotEmpty()) {
+            val clockData = moshi.adapter(WidgetClockAnalogData::class.java).fromJson(glanceWidget.data)
                 ?: throw Exception("Invalid clock analog data")
 
             // Background image
@@ -62,7 +62,7 @@ fun ClockAnalogWidget(
                 modifier = GlanceModifier.fillMaxSize()
             )
 
-            ClockAnalogLayout(widget, clockData)
+            ClockAnalogLayout(glanceWidget, clockData)
         } else {
             ClockAnalogEmptyState()
         }
@@ -70,17 +70,17 @@ fun ClockAnalogWidget(
 }
 
 @Composable
-private fun ClockAnalogLayout(widget: Widget, data: WidgetClockAnalogData) {
-    val paddingVertical = when (widget.size) {
-        WidgetSize.SMALL -> 18.dp
-        WidgetSize.MEDIUM -> 18.dp
-        WidgetSize.LARGE -> 16.dp
+private fun ClockAnalogLayout(glanceWidget: GlanceWidget, data: WidgetClockAnalogData) {
+    val paddingVertical = when (glanceWidget.size) {
+        GlanceWidgetSize.SMALL -> 18.dp
+        GlanceWidgetSize.MEDIUM -> 18.dp
+        GlanceWidgetSize.LARGE -> 16.dp
     }
 
     ClockAnalog(
         paddingVertical = paddingVertical,
         data = data,
-        widgetType = widget.type
+        glanceWidgetType = glanceWidget.type
     )
 }
 

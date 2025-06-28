@@ -22,12 +22,12 @@ import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import androidx.core.graphics.createBitmap
-import com.s4ltf1sh.glance_widgets.model.Widget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
 import androidx.core.graphics.scale
 
 @Composable
 fun QuotesWidget(
-    widget: Widget,
+    glanceWidget: GlanceWidget,
     widgetId: Int
 ) {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -45,16 +45,16 @@ fun QuotesWidget(
                 actionStartActivity<MainActivity>(
                     parameters = actionParametersOf(
                         BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
-                        BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
+                        BaseAppWidget.KEY_WIDGET_TYPE to glanceWidget.type.typeId,
+                        BaseAppWidget.KEY_WIDGET_SIZE to glanceWidget.size.name
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (widget.data.isNotEmpty()) {
+        if (glanceWidget.data.isNotEmpty()) {
             val quoteData =
-                moshi.adapter(WidgetQuoteData::class.java).fromJson(widget.data)
+                moshi.adapter(WidgetQuoteData::class.java).fromJson(glanceWidget.data)
                     ?: throw Exception("Invalid quote data")
 
             // Try to load from resources first

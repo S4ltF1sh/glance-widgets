@@ -16,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
-import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
+import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.ui.screen.CalendarSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ClockAnalogSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
@@ -50,12 +50,12 @@ class MainActivity : ComponentActivity() {
         )
 
         val currentType = intent.getStringExtra(BaseAppWidget.KEY_WIDGET_TYPE.name)?.let {
-            WidgetType.fromTypeId(it)
-        } ?: WidgetType.None
+            GlanceWidgetType.fromTypeId(it)
+        } ?: GlanceWidgetType.None
 
         val currentSize = intent.getStringExtra(BaseAppWidget.KEY_WIDGET_SIZE.name)?.let {
-            WidgetSize.valueOf(it)
-        } ?: WidgetSize.SMALL
+            GlanceWidgetSize.valueOf(it)
+        } ?: GlanceWidgetSize.SMALL
 
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             finish()
@@ -66,9 +66,9 @@ class MainActivity : ComponentActivity() {
 
         // Load data based on current type
         when (currentType) {
-            is WidgetType.Quote -> mainViewModel.getQuotesBySize(currentSize)
-            is WidgetType.Clock.Digital -> mainViewModel.getClockDigitalsBySize(currentSize)
-            is WidgetType.Clock.Analog -> mainViewModel.getClockAnalogsBySize(currentSize)
+            is GlanceWidgetType.Quote -> mainViewModel.getQuotesBySize(currentSize)
+            is GlanceWidgetType.Clock.Digital -> mainViewModel.getClockDigitalsBySize(currentSize)
+            is GlanceWidgetType.Clock.Analog -> mainViewModel.getClockAnalogsBySize(currentSize)
             else -> {
                 // Load quotes by default for new widgets
                 mainViewModel.getQuotesBySize(currentSize)
@@ -82,37 +82,37 @@ class MainActivity : ComponentActivity() {
 
             GlancewidgetsTheme {
                 var screenState by remember { mutableStateOf(getInitialScreenState(currentType)) }
-                var selectedClockType by remember { mutableStateOf<WidgetType.Clock.Digital?>(null) }
+                var selectedClockType by remember { mutableStateOf<GlanceWidgetType.Clock.Digital?>(null) }
 
                 when (screenState) {
                     ScreenState.TYPE_SELECTION -> {
-                        if (currentType == WidgetType.None) {
+                        if (currentType == GlanceWidgetType.None) {
                             ConfigurationScreen(
                                 widgetId = widgetId,
                                 currentType = currentType,
                                 onTypeSelected = { type ->
                                     when (type) {
-                                        WidgetType.Quote -> {
+                                        GlanceWidgetType.Quote -> {
                                             screenState = ScreenState.QUOTE_SELECTION
                                         }
 
-                                        WidgetType.Photo -> {
+                                        GlanceWidgetType.Photo -> {
                                             screenState = ScreenState.PHOTO_SELECTION
                                         }
 
-                                        is WidgetType.Clock.Digital -> {
+                                        is GlanceWidgetType.Clock.Digital -> {
                                             selectedClockType = type
                                             mainViewModel.getClockDigitalsBySize(currentSize)
                                             screenState = ScreenState.CLOCK_DIGITAL_SELECTION
                                         }
 
-                                        is WidgetType.Clock.Analog -> {
+                                        is GlanceWidgetType.Clock.Analog -> {
                                             // For analog clocks, you might want to show a selection screen
                                             mainViewModel.getClockAnalogsBySize(currentSize)
                                             screenState = ScreenState.CLOCK_ANALOG_SELECTION
                                         }
 
-                                        is WidgetType.Calendar -> {
+                                        is GlanceWidgetType.Calendar -> {
                                             screenState = ScreenState.CALENDAR_SELECTION
                                         }
 
@@ -132,14 +132,14 @@ class MainActivity : ComponentActivity() {
 
                     ScreenState.QUOTE_SELECTION -> {
                         QuoteSelectionScreen(
-                            widgetSize = currentSize,
+                            glanceWidgetSize = currentSize,
                             quotes = quotes.value,
                             onQuoteSelected = { quote ->
                                 QuotesWidgetWorker.enqueue(
                                     context = this@MainActivity,
                                     widgetId = widgetId,
                                     type = currentType,
-                                    widgetSize = currentSize,
+                                    glanceWidgetSize = currentSize,
                                     imageUrl = quote.imageUrl
                                 )
 
@@ -162,11 +162,11 @@ class MainActivity : ComponentActivity() {
 
                     ScreenState.CLOCK_DIGITAL_SELECTION -> {
                         val clockType =
-                            selectedClockType ?: currentType as? WidgetType.Clock.Digital
+                            selectedClockType ?: currentType as? GlanceWidgetType.Clock.Digital
 
                         if (clockType != null) {
                             ClockDigitalSelectionScreen(
-                                widgetSize = currentSize,
+                                glanceWidgetSize = currentSize,
                                 clockType = clockType,
                                 clockDigitalBackgrounds = clockDigitals.value,
                                 onClockDigitalSelected = { clockDigital ->
@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
                                         context = this@MainActivity,
                                         widgetId = widgetId,
                                         type = clockType,
-                                        widgetSize = currentSize,
+                                        glanceWidgetSize = currentSize,
                                         backgroundUrl = clockDigital.backgroundUrl
                                     )
 
@@ -189,14 +189,14 @@ class MainActivity : ComponentActivity() {
 
                     ScreenState.CLOCK_ANALOG_SELECTION -> {
                         ClockAnalogSelectionScreen(
-                            widgetSize = currentSize,
+                            glanceWidgetSize = currentSize,
                             clockAnalogBackgrounds = clockAnalogs.value,
                             onClockAnalogSelected = { clockAnalog ->
                                 ClockAnalogWidgetWorker.enqueue(
                                     context = this@MainActivity,
                                     widgetId = widgetId,
-                                    type = clockAnalog.type as WidgetType.Clock.Analog,
-                                    widgetSize = currentSize,
+                                    type = clockAnalog.type as GlanceWidgetType.Clock.Analog,
+                                    glanceWidgetSize = currentSize,
                                     backgroundUrl = clockAnalog.backgroundUrl
                                 )
 
@@ -207,11 +207,11 @@ class MainActivity : ComponentActivity() {
 
                     ScreenState.CALENDAR_SELECTION -> {
                         val calendarType =
-                            currentType as? WidgetType.Calendar ?: WidgetType.Calendar.Type1
+                            currentType as? GlanceWidgetType.Calendar ?: GlanceWidgetType.Calendar.Type1Glance
 
                         CalendarSelectionScreen(
                             widgetId = widgetId,
-                            widgetSize = currentSize,
+                            glanceWidgetSize = currentSize,
                             calendarType = calendarType,
                             onBackPressed = {
                                 screenState = ScreenState.TYPE_SELECTION
@@ -221,7 +221,7 @@ class MainActivity : ComponentActivity() {
                                     context = this,
                                     widgetId = widgetId,
                                     type = calendar.type,
-                                    widgetSize = calendar.size,
+                                    glanceWidgetSize = calendar.size,
                                     backgroundImageUrl = calendar.backgroundUrl
                                 )
                                 finish()
@@ -241,14 +241,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun getInitialScreenState(currentType: WidgetType): ScreenState {
+    private fun getInitialScreenState(currentType: GlanceWidgetType): ScreenState {
         return when (currentType) {
-            WidgetType.None -> ScreenState.TYPE_SELECTION
-            WidgetType.Quote -> ScreenState.QUOTE_SELECTION
-            WidgetType.Photo -> ScreenState.PHOTO_SELECTION
-            is WidgetType.Clock.Digital -> ScreenState.CLOCK_DIGITAL_SELECTION
-            is WidgetType.Clock.Analog -> ScreenState.CLOCK_ANALOG_SELECTION
-            is WidgetType.Calendar -> ScreenState.CALENDAR_SELECTION
+            GlanceWidgetType.None -> ScreenState.TYPE_SELECTION
+            GlanceWidgetType.Quote -> ScreenState.QUOTE_SELECTION
+            GlanceWidgetType.Photo -> ScreenState.PHOTO_SELECTION
+            is GlanceWidgetType.Clock.Digital -> ScreenState.CLOCK_DIGITAL_SELECTION
+            is GlanceWidgetType.Clock.Analog -> ScreenState.CLOCK_ANALOG_SELECTION
+            is GlanceWidgetType.Calendar -> ScreenState.CALENDAR_SELECTION
             else -> ScreenState.TYPE_SELECTION
         }
     }
@@ -257,30 +257,30 @@ class MainActivity : ComponentActivity() {
         // Add sample quotes - replace with your actual quote images
         val sampleQuotes = listOf(
             // Set 1 - Motivational
-            QuoteEntity(
-                size = WidgetSize.SMALL,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.SMALL,
                 imageUrl = "https://picsum.photos/400"
             ),
-            QuoteEntity(
-                size = WidgetSize.MEDIUM,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.MEDIUM,
                 imageUrl = "https://picsum.photos/200/300"
             ),
-            QuoteEntity(
-                size = WidgetSize.LARGE,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.LARGE,
                 imageUrl = "https://picsum.photos/200/300"
             ),
 
             // Set 2 - Inspirational
-            QuoteEntity(
-                size = WidgetSize.SMALL,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.SMALL,
                 imageUrl = "https://picsum.photos/200/300"
             ),
-            QuoteEntity(
-                size = WidgetSize.MEDIUM,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.MEDIUM,
                 imageUrl = "https://picsum.photos/200/300"
             ),
-            QuoteEntity(
-                size = WidgetSize.LARGE,
+            GlanceQuoteEntity(
+                size = GlanceWidgetSize.LARGE,
                 imageUrl = "https://picsum.photos/200/300"
             ),
         )
@@ -292,48 +292,48 @@ class MainActivity : ComponentActivity() {
         // Add sample clock digital backgrounds - replace with your actual clock background images
         val sampleClockDigitals = listOf(
             // Type1 backgrounds
-            ClockDigitalEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Clock.Digital.Type1,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Clock.Digital.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=1"
             ),
-            ClockDigitalEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Clock.Digital.Type1,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Clock.Digital.Type1Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=2"
             ),
-            ClockDigitalEntity(
-                size = WidgetSize.LARGE,
-                type = WidgetType.Clock.Digital.Type1,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Clock.Digital.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=3"
             ),
 
             // Type2 backgrounds
-            ClockDigitalEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Clock.Digital.Type2,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Clock.Digital.Type2Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=4"
             ),
-            ClockDigitalEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Clock.Digital.Type2,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Clock.Digital.Type2Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=5"
             ),
-            ClockDigitalEntity(
-                size = WidgetSize.LARGE,
-                type = WidgetType.Clock.Digital.Type2,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Clock.Digital.Type2Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=6"
             ),
 
             // Additional backgrounds for variety
-            ClockDigitalEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Clock.Digital.Type1,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Clock.Digital.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=7"
             ),
-            ClockDigitalEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Clock.Digital.Type2,
+            GlanceClockDigitalEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Clock.Digital.Type2Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=8"
             ),
         )
@@ -345,24 +345,24 @@ class MainActivity : ComponentActivity() {
         // Add sample clock analogs - replace with your actual clock images
         val sampleClockAnalogs = listOf(
             // Analog clock backgrounds
-            ClockAnalogEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Clock.Analog.Type1,
+            GlanceClockAnalogEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Clock.Analog.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400",
             ),
-            ClockAnalogEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Clock.Analog.Type1,
+            GlanceClockAnalogEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Clock.Analog.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400"
             ),
-            ClockAnalogEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Clock.Analog.Type2,
+            GlanceClockAnalogEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Clock.Analog.Type2Glance,
                 backgroundUrl = "https://picsum.photos/800/400",
             ),
-            ClockAnalogEntity(
-                size = WidgetSize.LARGE,
-                type = WidgetType.Clock.Analog.Type2,
+            GlanceClockAnalogEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Clock.Analog.Type2Glance,
                 backgroundUrl = "https://picsum.photos/400/400"
             )
         )
@@ -374,36 +374,36 @@ class MainActivity : ComponentActivity() {
         // Add sample calendars - replace with your actual calendar images
         val sampleCalendars = listOf(
             // Calendar Type1
-            CalendarEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Calendar.Type1,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Calendar.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=1"
             ),
-            CalendarEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Calendar.Type1,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Calendar.Type1Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=2"
             ),
-            CalendarEntity(
-                size = WidgetSize.LARGE,
-                type = WidgetType.Calendar.Type1,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Calendar.Type1Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=3"
             ),
 
             // Calendar Type2
-            CalendarEntity(
-                size = WidgetSize.SMALL,
-                type = WidgetType.Calendar.Type2,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Calendar.Type2Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=4"
             ),
-            CalendarEntity(
-                size = WidgetSize.MEDIUM,
-                type = WidgetType.Calendar.Type2,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Calendar.Type2Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=5"
             ),
-            CalendarEntity(
-                size = WidgetSize.LARGE,
-                type = WidgetType.Calendar.Type2,
+            GlanceCalendarEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Calendar.Type2Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=6"
             )
         )

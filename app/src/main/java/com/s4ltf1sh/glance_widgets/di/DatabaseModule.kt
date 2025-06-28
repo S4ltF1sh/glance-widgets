@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.s4ltf1sh.glance_widgets.db.AppDatabase
 import com.s4ltf1sh.glance_widgets.db.DatabaseManager
 import com.s4ltf1sh.glance_widgets.db.RoomDatabaseManager
-import com.s4ltf1sh.glance_widgets.db.WidgetDao
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetDao
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -36,25 +36,25 @@ object DatabaseModule {
                         super.onCreate(db)
                     }
                 },
-            ).build()
+            ).fallbackToDestructiveMigration(false).build()
 
     @Provides
-    fun providesWidgetModelDao(database: AppDatabase): WidgetDao = database.widgetDao()
+    fun providesWidgetModelDao(database: AppDatabase): GlanceWidgetDao = database.glanceWidgetDao()
 
     @Provides
-    fun providesQuoteDao(database: AppDatabase) = database.quoteDao()
+    fun providesQuoteDao(database: AppDatabase) = database.glanceQuoteDao()
 
     @Provides
-    fun providesPhotoDao(database: AppDatabase) = database.photoDao()
+    fun providesPhotoDao(database: AppDatabase) = database.glancePhotoDao()
 
     @Provides
-    fun providesClockDigitalDao(database: AppDatabase) = database.clockDigitalDao()
+    fun providesClockDigitalDao(database: AppDatabase) = database.glanceClockDigitalDao()
 
     @Provides
-    fun providesClockAnalogDao(database: AppDatabase) = database.clockAnalogDao()
+    fun providesClockAnalogDao(database: AppDatabase) = database.glanceClockAnalogDao()
 
     @Provides
-    fun providesCalendarDao(database: AppDatabase) = database.calendarDao()
+    fun providesCalendarDao(database: AppDatabase) = database.glanceCalendarDao()
 
     @Provides
     @Singleton

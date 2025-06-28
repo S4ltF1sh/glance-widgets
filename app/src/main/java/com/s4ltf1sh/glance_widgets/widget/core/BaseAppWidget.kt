@@ -15,6 +15,7 @@ import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -30,11 +31,11 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import androidx.work.WorkManager
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.model.Widget
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetEntity
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.widget.widget.WidgetEmpty
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.clock.analog.ClockAnalogWidget
@@ -46,7 +47,9 @@ import kotlinx.coroutines.launch
 
 abstract class BaseAppWidget : GlanceAppWidget() {
 
-    abstract val widgetSize: WidgetSize
+    abstract val glanceWidgetSize: GlanceWidgetSize
+
+    override val sizeMode = SizeMode.Exact
 
     // Use the new state definition
     override val stateDefinition = BaseWidgetStateDefinition
@@ -74,7 +77,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val modelRepo = WidgetModelRepository.get(context.applicationContext)
+        val modelRepo = GlanceWidgetRepository.get(context.applicationContext)
         val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
 
         provideContent {
@@ -83,7 +86,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
 
             Log.d(
                 "BaseAppWidget",
-                "Providing widget with ID: $widgetId, Size: $widgetSize, State: $appWidgetState"
+                "Providing widget with ID: $widgetId, Size: $glanceWidgetSize, State: $appWidgetState"
             )
 
             // Initialize widget if in Init state
@@ -98,28 +101,28 @@ abstract class BaseAppWidget : GlanceAppWidget() {
                                 Log.d("BaseAppWidget", "Widget found in database: $existingWidget")
                                 context.setWidgetSuccess(
                                     glanceId = id,
-                                    widgetSize = widgetSize,
+                                    glanceWidgetSize = glanceWidgetSize,
                                     widget = existingWidget
                                 )
                             } else {
                                 // Create new widget with default type
-                                val defaultWidget = WidgetEntity(
+                                val defaultWidget = GlanceWidgetEntity(
                                     widgetId = widgetId,
-                                    type = WidgetType.None,
-                                    size = widgetSize
+                                    type = GlanceWidgetType.None,
+                                    size = glanceWidgetSize
                                 )
                                 modelRepo.insertWidget(defaultWidget)
 
                                 context.setWidgetEmpty(
                                     glanceId = id,
-                                    widgetSize = widgetSize
+                                    glanceWidgetSize = glanceWidgetSize
                                 )
                             }
                         } catch (e: Exception) {
                             Log.e("BaseAppWidget", "Error initializing widget", e)
                             context.setWidgetError(
                                 glanceId = id,
-                                widgetSize = widgetSize,
+                                glanceWidgetSize = glanceWidgetSize,
                                 message = "Failed to initialize widget: ${e.message}",
                                 throwable = e
                             )
@@ -135,7 +138,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
     override suspend fun onDelete(context: Context, glanceId: GlanceId) {
         super.onDelete(context, glanceId)
         val widgetId = GlanceAppWidgetManager(context).getAppWidgetId(glanceId)
-        val modelRepo = WidgetModelRepository.get(context.applicationContext)
+        val modelRepo = GlanceWidgetRepository.get(context.applicationContext)
 
         try {
             modelRepo.deleteWidgetById(widgetId)
@@ -164,7 +167,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
                 when (appWidgetState) {
                     AppWidgetState.Init -> ContentLoading()
                     AppWidgetState.Empty -> ContentEmpty(widgetId, context, glanceId)
-                    is AppWidgetState.Success -> ContentSuccess(appWidgetState.widget, widgetId)
+                    is AppWidgetState.Success -> ContentSuccess(appWidgetState.glanceWidget, widgetId)
                     is AppWidgetState.Error -> ContentError(
                         appWidgetState.message,
                         widgetId,
@@ -196,25 +199,25 @@ abstract class BaseAppWidget : GlanceAppWidget() {
     @Composable
     open fun ContentEmpty(widgetId: Int, context: Context, glanceId: GlanceId) {
         WidgetEmpty(
-            widget = WidgetEntity(
+            glanceWidget = GlanceWidgetEntity(
                 widgetId = widgetId,
-                type = WidgetType.None,
-                size = widgetSize
+                type = GlanceWidgetType.None,
+                size = glanceWidgetSize
             ).toWidget(),
             widgetId = widgetId
         )
     }
 
     @Composable
-    open fun ContentSuccess(widget: Widget, widgetId: Int) {
-        when (widget.type) {
-            is WidgetType.Weather -> WeatherWidget(widget, widgetId)
-            is WidgetType.Calendar -> CalendarWidget(widget, widgetId)
-            is WidgetType.Clock.Digital -> ClockDigitalWidget(widget, widgetId)
-            is WidgetType.Clock.Analog -> ClockAnalogWidget(widget, widgetId)
-            WidgetType.Photo -> PhotoWidget(widget, widgetId)
-            WidgetType.Quote -> QuotesWidget(widget, widgetId)
-            else -> WidgetEmpty(widget, widgetId)
+    open fun ContentSuccess(glanceWidget: GlanceWidget, widgetId: Int) {
+        when (glanceWidget.type) {
+            is GlanceWidgetType.Weather -> WeatherWidget(glanceWidget, widgetId)
+            is GlanceWidgetType.Calendar -> CalendarWidget(glanceWidget, widgetId)
+            is GlanceWidgetType.Clock.Digital -> ClockDigitalWidget(glanceWidget, widgetId)
+            is GlanceWidgetType.Clock.Analog -> ClockAnalogWidget(glanceWidget, widgetId)
+            GlanceWidgetType.Photo -> PhotoWidget(glanceWidget, widgetId)
+            GlanceWidgetType.Quote -> QuotesWidget(glanceWidget, widgetId)
+            else -> WidgetEmpty(glanceWidget, widgetId)
         }
     }
 
@@ -254,7 +257,7 @@ abstract class BaseAppWidget : GlanceAppWidget() {
                     kotlinx.coroutines.delay(5000)
                     context.refreshWidget(
                         glanceId = glanceId,
-                        widgetSize = widgetSize
+                        glanceWidgetSize = glanceWidgetSize
                     )
                 }
             }

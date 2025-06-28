@@ -21,17 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 
 @Composable
 fun ClockDigitalSelectionScreen(
-    widgetSize: WidgetSize,
-    clockType: WidgetType.Clock.Digital,
-    clockDigitalBackgrounds: List<ClockDigitalEntity>,
-    onClockDigitalSelected: (ClockDigitalEntity) -> Unit
+    glanceWidgetSize: GlanceWidgetSize,
+    clockType: GlanceWidgetType.Clock.Digital,
+    clockDigitalBackgrounds: List<GlanceClockDigitalEntity>,
+    onClockDigitalSelected: (GlanceClockDigitalEntity) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -45,14 +45,14 @@ fun ClockDigitalSelectionScreen(
         )
 
         Text(
-            text = "Widget Size: ${widgetSize.name}",
+            text = "Widget Size: ${glanceWidgetSize.name}",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
         Text(
-            text = "Clock Type: ${if (clockType == WidgetType.Clock.Digital.Type1) "Day → Month → Time" else "Time → Day, Month"}",
+            text = "Clock Type: ${if (clockType == GlanceWidgetType.Clock.Digital.Type1Glance) "Day → Month → Time" else "Time → Day, Month"}",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -71,14 +71,14 @@ fun ClockDigitalSelectionScreen(
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = getGridCellSize(widgetSize)),
+                columns = GridCells.Adaptive(minSize = getGridCellSize(glanceWidgetSize)),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(clockDigitalBackgrounds) { clockDigital ->
                     ClockDigitalItem(
                         clockDigital = clockDigital,
-                        widgetSize = widgetSize,
+                        glanceWidgetSize = glanceWidgetSize,
                         onClick = { onClockDigitalSelected(clockDigital) }
                     )
                 }
@@ -89,14 +89,14 @@ fun ClockDigitalSelectionScreen(
 
 @Composable
 private fun ClockDigitalItem(
-    clockDigital: ClockDigitalEntity,
-    widgetSize: WidgetSize,
+    clockDigital: GlanceClockDigitalEntity,
+    glanceWidgetSize: GlanceWidgetSize,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(getAspectRatio(widgetSize))
+            .aspectRatio(getAspectRatio(glanceWidgetSize))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -131,8 +131,8 @@ private fun ClockDigitalItem(
             ) {
                 Text(
                     text = when (clockDigital.type) {
-                        is WidgetType.Clock.Digital.Type1 -> "T1"
-                        is WidgetType.Clock.Digital.Type2 -> "T2"
+                        is GlanceWidgetType.Clock.Digital.Type1Glance -> "T1"
+                        is GlanceWidgetType.Clock.Digital.Type2Glance -> "T2"
                         else -> "?"
                     },
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
@@ -144,14 +144,14 @@ private fun ClockDigitalItem(
     }
 }
 
-private fun getGridCellSize(widgetSize: WidgetSize): Dp = when (widgetSize) {
-    WidgetSize.SMALL -> 120.dp
-    WidgetSize.MEDIUM -> 160.dp
-    WidgetSize.LARGE -> 200.dp
+private fun getGridCellSize(glanceWidgetSize: GlanceWidgetSize): Dp = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 120.dp
+    GlanceWidgetSize.MEDIUM -> 160.dp
+    GlanceWidgetSize.LARGE -> 200.dp
 }
 
-private fun getAspectRatio(widgetSize: WidgetSize): Float = when (widgetSize) {
-    WidgetSize.SMALL -> 1f
-    WidgetSize.MEDIUM -> 2f
-    WidgetSize.LARGE -> 1f
+private fun getAspectRatio(glanceWidgetSize: GlanceWidgetSize): Float = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 1f
+    GlanceWidgetSize.MEDIUM -> 2f
+    GlanceWidgetSize.LARGE -> 1f
 }

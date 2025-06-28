@@ -237,70 +237,6 @@ suspend fun Context.getRandomImage(url: String, force: Boolean = false): Bitmap?
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
-suspend fun Context.downloadImage(
-    url: String,
-    force: Boolean
-): String {
-    val request = ImageRequest.Builder(this)
-        .data(url)
-        .build()
-
-    // Request the image to be loaded and throw error if it failed
-    with(imageLoader) {
-        if (force) {
-            diskCache?.remove(url)
-            memoryCache?.remove(MemoryCache.Key(url))
-        }
-        val result = execute(request)
-        if (result is ErrorResult) {
-            throw result.throwable
-        }
-    }
-
-    // Get the path of the loaded image from DiskCache.
-    val path = imageLoader.diskCache?.openSnapshot(url)?.use { snapshot ->
-        val imageFile = snapshot.data.toFile()
-
-        // Use the FileProvider to create a content URI
-        val contentUri = getUriForFile(
-            this,
-            "${applicationContext.packageName}.provider",
-            imageFile,
-        )
-
-        // Find the current launcher every time to ensure it has read permissions
-        val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_HOME) }
-        val resolveInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.resolveActivity(
-                intent,
-                PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong()),
-            )
-        } else {
-            packageManager.resolveActivity(
-                intent,
-                PackageManager.MATCH_DEFAULT_ONLY,
-            )
-        }
-        val launcherName = resolveInfo?.activityInfo?.packageName
-        if (launcherName != null) {
-            grantUriPermission(
-                launcherName,
-                contentUri,
-                FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
-            )
-        }
-
-        // return the path
-        contentUri.toString()
-    }
-
-    return requireNotNull(path) {
-        "Couldn't find cached file"
-    }
-}
-
-
 private const val TAG = "CoilImageDownload"
 private const val HIDDEN_IMAGE_FOLDER = ".widget_images"
 
@@ -392,54 +328,6 @@ private fun saveBitmapToFile(bitmap: Bitmap, file: File) {
     if (!tempFile.renameTo(file)) {
         tempFile.delete()
         throw Exception("Failed to save image file")
-    }
-}
-
-/**
- * Optimized version with size constraints for widgets
- */
-suspend fun Context.downloadImageForWidget(
-    url: String,
-    maxWidth: Int = 1080,
-    maxHeight: Int = 1080,
-    force: Boolean = false
-): String = withContext(Dispatchers.IO) {
-    try {
-        val hiddenFolder = File(filesDir, HIDDEN_IMAGE_FOLDER)
-        if (!hiddenFolder.exists()) {
-            hiddenFolder.mkdirs()
-        }
-
-        // Include size in filename for different widget sizes
-        val filename = generateFilenameWithSize(url, maxWidth, maxHeight)
-        val imageFile = File(hiddenFolder, filename)
-
-        if (!force && imageFile.exists() && imageFile.length() > 0) {
-            return@withContext imageFile.absolutePath
-        }
-
-        val imageLoader = ImageLoader.Builder(this@downloadImageForWidget)
-            .crossfade(false)
-            .build()
-
-        val request = ImageRequest.Builder(this@downloadImageForWidget)
-            .data(url)
-            .size(maxWidth, maxHeight) // Resize for widget
-            .allowHardware(false)
-            .build()
-
-        val result = imageLoader.execute(request)
-
-        if (result is SuccessResult) {
-            val bitmap = result.drawable.toBitmap()
-            saveBitmapToFile(bitmap, imageFile)
-            return@withContext imageFile.absolutePath
-        }
-
-        ""
-    } catch (e: Exception) {
-        Log.e(TAG, "Error downloading widget image", e)
-        ""
     }
 }
 

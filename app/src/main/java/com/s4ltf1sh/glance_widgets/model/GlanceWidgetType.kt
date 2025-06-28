@@ -4,40 +4,40 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface WidgetType {
+sealed interface GlanceWidgetType {
     val typeId: String
 
     @Serializable
     @SerialName("NONE")
-    data object None : WidgetType {
+    data object None : GlanceWidgetType {
         override val typeId = "NONE"
     }
 
     @Serializable
     @SerialName("PHOTO")
-    data object Photo : WidgetType {
+    data object Photo : GlanceWidgetType {
         override val typeId = "PHOTO"
     }
 
     @Serializable
     @SerialName("QUOTE")
-    data object Quote : WidgetType {
+    data object Quote : GlanceWidgetType {
         override val typeId = "QUOTE"
     }
 
     @Serializable
-    sealed interface Clock : WidgetType {
+    sealed interface Clock : GlanceWidgetType {
         @Serializable
         sealed interface Digital : Clock {
             @Serializable
             @SerialName("CLOCK_DIGITAL_TYPE1")
-            data object Type1 : Digital {
+            data object Type1Glance : Digital {
                 override val typeId = "CLOCK_DIGITAL_TYPE1"
             }
 
             @Serializable
             @SerialName("CLOCK_DIGITAL_TYPE2")
-            data object Type2 : Digital {
+            data object Type2Glance : Digital {
                 override val typeId = "CLOCK_DIGITAL_TYPE2"
             }
         }
@@ -46,130 +46,123 @@ sealed interface WidgetType {
         sealed interface Analog : Clock {
             @Serializable
             @SerialName("CLOCK_ANALOG_TYPE1")
-            data object Type1 : Analog {
+            data object Type1Glance : Analog {
                 override val typeId = "CLOCK_ANALOG_TYPE1"
             }
 
             @Serializable
             @SerialName("CLOCK_ANALOG_TYPE2")
-            data object Type2 : Analog {
+            data object Type2Glance : Analog {
                 override val typeId = "CLOCK_ANALOG_TYPE2"
             }
         }
     }
 
     @Serializable
-    sealed interface Calendar : WidgetType {
+    sealed interface Calendar : GlanceWidgetType {
         @Serializable
         @SerialName("CALENDAR_TYPE1")
-        data object Type1 : Calendar {
+        data object Type1Glance : Calendar {
             override val typeId = "CALENDAR_TYPE1"
         }
 
         @Serializable
         @SerialName("CALENDAR_TYPE2")
-        data object Type2 : Calendar {
+        data object Type2Glance : Calendar {
             override val typeId = "CALENDAR_TYPE2"
         }
 
         @Serializable
         @SerialName("CALENDAR_TYPE3")
-        data object Type3 : Calendar {
+        data object Type3Glance : Calendar {
             override val typeId = "CALENDAR_TYPE3"
         }
 
         @Serializable
         @SerialName("CALENDAR_TYPE4")
-        data object Type4 : Calendar {
+        data object Type4Glance : Calendar {
             override val typeId = "CALENDAR_TYPE4"
         }
 
         @Serializable
         @SerialName("CALENDAR_TYPE5")
-        data object Type5 : Calendar {
+        data object Type5Glance : Calendar {
             override val typeId = "CALENDAR_TYPE5"
-        }
-
-        @Serializable
-        @SerialName("CALENDAR_TYPE6")
-        data object Type6 : Calendar {
-            override val typeId = "CALENDAR_TYPE6"
         }
     }
 
     @Serializable
-    sealed interface Weather : WidgetType {
+    sealed interface Weather : GlanceWidgetType {
         @Serializable
         @SerialName("WEATHER_TYPE1")
-        data object Type1 : Weather {
+        data object Type1Glance : Weather {
             override val typeId = "WEATHER_TYPE1"
         }
 
         @Serializable
         @SerialName("WEATHER_TYPE2")
-        data object Type2 : Weather {
+        data object Type2Glance : Weather {
             override val typeId = "WEATHER_TYPE2"
         }
 
         @Serializable
         @SerialName("WEATHER_TYPE3")
-        data object Type3 : Weather {
+        data object Type3Glance : Weather {
             override val typeId = "WEATHER_TYPE3"
         }
 
         @Serializable
         @SerialName("WEATHER_TYPE4")
-        data object Type4 : Weather {
+        data object Type4Glance : Weather {
             override val typeId = "WEATHER_TYPE4"
         }
     }
 
     companion object {
         // Registry pattern
-        private val typeRegistry: Map<String, WidgetType> by lazy {
+        private val typeRegistry: Map<String, GlanceWidgetType> by lazy {
             buildMap {
                 registerType(None)
                 registerType(Photo)
                 registerType(Quote)
-                registerType(Clock.Digital.Type1)
-                registerType(Clock.Digital.Type2)
-                registerType(Clock.Analog.Type1)
-                registerType(Clock.Analog.Type2)
-                registerType(Calendar.Type1)
-                registerType(Calendar.Type2)
-                registerType(Calendar.Type3)
-                registerType(Calendar.Type4)
-                registerType(Calendar.Type5)
-                registerType(Calendar.Type6)
-                registerType(Weather.Type1)
-                registerType(Weather.Type2)
-                registerType(Weather.Type3)
-                registerType(Weather.Type4)
+                registerType(Clock.Digital.Type1Glance)
+                registerType(Clock.Digital.Type2Glance)
+                registerType(Clock.Analog.Type1Glance)
+                registerType(Clock.Analog.Type2Glance)
+                registerType(Calendar.Type1Glance)
+                registerType(Calendar.Type2Glance)
+                registerType(Calendar.Type3Glance)
+                registerType(Calendar.Type4Glance)
+                registerType(Calendar.Type5Glance)
+                registerType(Weather.Type1Glance)
+                registerType(Weather.Type2Glance)
+                registerType(Weather.Type3Glance)
+                registerType(Weather.Type4Glance)
             }
         }
 
-        private fun MutableMap<String, WidgetType>.registerType(type: WidgetType) {
+        private fun MutableMap<String, GlanceWidgetType>.registerType(type: GlanceWidgetType) {
             put(type.typeId, type)
         }
 
-        fun fromTypeId(typeId: String): WidgetType? = typeRegistry[typeId]
+        fun fromTypeId(typeId: String): GlanceWidgetType? = typeRegistry[typeId]
 
-        fun getAllTypes(): List<WidgetType> = typeRegistry.values.toList()
+        fun getAllTypes(): List<GlanceWidgetType> = typeRegistry.values.toList()
 
-        fun getAllMainTypes(): List<WidgetType> = listOf(
+        fun getAllMainTypes(): List<GlanceWidgetType> = listOf(
             None, Photo, Quote,
-            Clock.Digital.Type1,
-            Clock.Digital.Type2,
-            Clock.Analog.Type1,
-            Clock.Analog.Type2,
-            Calendar.Type1,
-            Weather.Type1
+            Clock.Digital.Type1Glance,
+            Clock.Digital.Type2Glance,
+            Clock.Analog.Type1Glance,
+            Clock.Analog.Type2Glance,
+            Calendar.Type1Glance,
+            Weather.Type1Glance
         )
 
         // Migration support
-        fun fromLegacyEnum(legacyType: String): WidgetType = when (legacyType) {
-            "WEATHER" -> Weather.Type1
-            "CALENDAR" -> Calendar.Type1
+        fun fromLegacyEnum(legacyType: String): GlanceWidgetType = when (legacyType) {
+            "WEATHER" -> Weather.Type1Glance
+            "CALENDAR" -> Calendar.Type1Glance
             "PHOTO" -> Photo
             "QUOTE" -> Quote
             "NONE" -> None

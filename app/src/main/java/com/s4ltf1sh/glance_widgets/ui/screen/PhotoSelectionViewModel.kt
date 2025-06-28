@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
 import com.s4ltf1sh.glance_widgets.db.photo.Media
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.model.photo.WidgetPhotoData
 import com.s4ltf1sh.glance_widgets.utils.EventChannel
 import com.s4ltf1sh.glance_widgets.utils.HasEventFlow
@@ -35,7 +35,7 @@ sealed interface PhotoSelectionEvent {
 
 @HiltViewModel
 class PhotoSelectionViewModel @Inject constructor(
-    private val widgetRepository: WidgetModelRepository,
+    private val widgetRepository: GlanceWidgetRepository,
     private val moshi: Moshi,
     private val eventChannel: EventChannel<PhotoSelectionEvent>
 ) : ViewModel(), HasEventFlow<PhotoSelectionEvent> by eventChannel {
@@ -139,7 +139,7 @@ class PhotoSelectionViewModel @Inject constructor(
         val widgetPhotoData = WidgetPhotoData(photoPaths = _uiState.value.selectedPhotos.toList())
 
         val updatedWidget = widget.copy(
-            type = WidgetType.Photo,
+            type = GlanceWidgetType.Photo,
             data = moshi.adapter(WidgetPhotoData::class.java).toJson(widgetPhotoData),
         )
 

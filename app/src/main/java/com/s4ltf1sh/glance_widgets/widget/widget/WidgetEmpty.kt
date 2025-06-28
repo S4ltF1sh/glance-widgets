@@ -12,18 +12,18 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.text.Text
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.model.Widget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 
 @Composable
-fun WidgetEmpty(widget: Widget, widgetId: Int) {
+fun WidgetEmpty(glanceWidget: GlanceWidget, widgetId: Int) {
     Box(
         modifier = GlanceModifier.fillMaxSize().background(Color.White).clickable(
             actionStartActivity<MainActivity>(
                 parameters = actionParametersOf(
                     BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                    BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
-                    BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
+                    BaseAppWidget.KEY_WIDGET_TYPE to glanceWidget.type.typeId,
+                    BaseAppWidget.KEY_WIDGET_SIZE to glanceWidget.size.name
                 )
             )
         ),

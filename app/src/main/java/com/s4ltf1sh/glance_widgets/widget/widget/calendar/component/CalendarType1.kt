@@ -15,46 +15,48 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.ui.theme.MonthCalendarColors
+import androidx.glance.layout.width
+import androidx.glance.layout.wrapContentHeight
+import androidx.glance.layout.wrapContentWidth
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
+import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
+import com.s4ltf1sh.glance_widgets.utils.selectedDateBackground
 import java.util.Calendar
 
 @Composable
 fun CalendarType1(
-    widgetSize: WidgetSize,
+    glanceWidgetSize: GlanceWidgetSize,
     calendar: Calendar,
     onGoToPreviousMonth: () -> Unit,
     onGoToNextMonth: () -> Unit,
-    dayOfWeekNames: List<String> = listOf(
-        "Sun",
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Fri",
-        "Sat"
-    ),
-    monthCalendarColors: MonthCalendarColors,
-    selectedDateBackground: (() -> ImageProvider)? = null
 ) {
-    when (widgetSize) {
-        WidgetSize.SMALL -> CalendarSmall(
-            modifier = GlanceModifier.padding(20.dp),
+    val selectedDateBackground = selectedDateBackground(GlanceWidgetType.Calendar.Type1Glance)
+
+    when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> CalendarSmall(
+            modifier = GlanceModifier.fillMaxSize().padding(10.dp),
             calendar = calendar,
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth,
             selectedDateBackground = selectedDateBackground
         )
 
-        WidgetSize.MEDIUM -> CalendarMedium(
-            modifier = GlanceModifier.padding(24.dp),
+        GlanceWidgetSize.MEDIUM -> CalendarMedium(
+            modifier = GlanceModifier.fillMaxSize().padding(16.dp),
             calendar = calendar,
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth,
             selectedDateBackground = selectedDateBackground
         )
 
-        WidgetSize.LARGE -> TODO()
+        GlanceWidgetSize.LARGE -> CalendarLarge(
+            modifier = GlanceModifier.fillMaxSize().padding(24.dp),
+            calendar = calendar,
+            onGoToPreviousMonth = onGoToPreviousMonth,
+            onGoToNextMonth = onGoToNextMonth,
+            selectedDateBackground = selectedDateBackground
+        )
     }
 }
 
@@ -64,7 +66,7 @@ private fun CalendarSmall(
     calendar: Calendar,
     onGoToPreviousMonth: () -> Unit,
     onGoToNextMonth: () -> Unit,
-    selectedDateBackground: (() -> ImageProvider)? = null
+    selectedDateBackground: ImageProvider
 ) {
     val context = LocalContext.current
 
@@ -74,18 +76,18 @@ private fun CalendarSmall(
     ) {
         CalendarHeaderDefault(
             context = context,
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.wrapContentHeight().fillMaxWidth(),
             calendar = calendar,
-            textSize = 12.sp,
+            textSize = 14.sp,
             textColor = Color.White,
-            iconSize = 14.dp,
+            iconSize = 24.dp,
             iconColor = Color.White,
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth
         )
 
         Spacer(
-            modifier = GlanceModifier.height(20.dp)
+            modifier = GlanceModifier.height(12.dp)
         )
 
         DatesDefault(
@@ -105,35 +107,110 @@ private fun CalendarMedium(
     calendar: Calendar,
     onGoToPreviousMonth: () -> Unit,
     onGoToNextMonth: () -> Unit,
-    selectedDateBackground: (() -> ImageProvider)? = null
+    selectedDateBackground: ImageProvider
 ) {
     val context = LocalContext.current
 
     Row(
-        modifier = modifier
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        CalendarHeaderDefault(
-            context = context,
-            calendar = calendar,
-            textColor = Color.White,
-            textSize = 14.sp,
-            iconSize = 20.dp,
-            iconColor = Color.White,
-            onGoToPreviousMonth = onGoToPreviousMonth,
-            onGoToNextMonth = onGoToNextMonth
-        )
+        Column(
+            modifier = GlanceModifier.wrapContentWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CalendarHeaderDefault(
+                modifier = GlanceModifier.wrapContentWidth().wrapContentHeight(),
+                context = context,
+                calendar = Calendar.getInstance(),
+                textColor = Color.White,
+                textSize = 14.sp,
+                iconSize = 20.dp,
+                iconColor = Color.White,
+                onGoToPreviousMonth = onGoToPreviousMonth,
+                onGoToNextMonth = onGoToNextMonth,
+                showActionButtons = false
+            )
+
+            Spacer(
+                modifier = GlanceModifier.height(10.dp)
+            )
+
+            CurrentDayWithLocationVertical(
+                modifier = GlanceModifier,
+                dayOfWeek = CalendarWidgetUtils.getTodayDayOfWeek(),
+                dayOfWeekSize = 16.sp,
+                dayOfWeekColor = Color.White,
+                dayOfMonth = CalendarWidgetUtils.getTodayDayOfMonth(),
+                dayOfMonthSize = 32.sp,
+                dayOfMonthColor = Color.White,
+                location = "USA, New York",
+                locationSize = 11.sp
+            )
+        }
 
         Spacer(
-            modifier = GlanceModifier.height(20.dp)
+            modifier = GlanceModifier.width(20.dp)
         )
 
         DatesDefault(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.wrapContentHeight().fillMaxWidth(),
             calendar = calendar,
-            dateTextSize = 10.sp,
+            dateTextSize = 12.sp,
             focusedDateColor = Color.White,
             showUnfocusedDates = false,
             selectedDateBackground = selectedDateBackground
+        )
+    }
+}
+
+@Composable
+private fun CalendarLarge(
+    modifier: GlanceModifier = GlanceModifier,
+    calendar: Calendar,
+    onGoToPreviousMonth: () -> Unit,
+    onGoToNextMonth: () -> Unit,
+    selectedDateBackground: ImageProvider
+) {
+    val monthName = CalendarWidgetUtils.getCurrentMonthName()
+    val year = CalendarWidgetUtils.getCurrentYear()
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CurrentDayWithLocationHorizontal(
+            modifier = GlanceModifier.fillMaxWidth().wrapContentHeight(),
+            dayOfWeek = CalendarWidgetUtils.getTodayDayOfWeek(),
+            dayOfWeekSize = 14.sp,
+            dayOfWeekColor = Color.White,
+            dayOfMonth = CalendarWidgetUtils.getTodayDayOfMonth(),
+            dayOfMonthSize = 48.sp,
+            dayOfMonthColor = Color.White,
+            monthName = monthName,
+            monthNameSize = 18.sp,
+            monthNameColor = Color.White,
+            year = year,
+            yearSize = 18.sp,
+            location = "USA, New York",
+            locationSize = 11.sp
+        )
+
+        Spacer(modifier = GlanceModifier.height(20.dp))
+
+        DatesWithMonthButtons(
+            calendar = calendar,
+            dateTextSize = 12.sp,
+            dateTextColor = Color.White,
+            selectedDateColor = Color.White,
+            selectedDateBackground = selectedDateBackground,
+            monthButtonColor = Color.White,
+            monthButtonBackground = Color.White.copy(alpha = 0.2F),
+            onDateClick = null,
+            onNextMonthClick = onGoToNextMonth,
+            onPreviousMonthClick = onGoToPreviousMonth
         )
     }
 }

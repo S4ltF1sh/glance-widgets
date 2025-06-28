@@ -2,27 +2,184 @@ package com.s4ltf1sh.glance_widgets.widget.widget.calendar.component
 
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.ImageProvider
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Column
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import com.s4ltf1sh.glance_widgets.R
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
+import com.s4ltf1sh.glance_widgets.utils.toColor
+import java.util.Calendar
+
+@Composable
+fun CalendarType3(
+    glanceWidgetSize: GlanceWidgetSize,
+    calendar: Calendar,
+    dayOfWeekNames: List<String>,
+) {
+    val selectedDateBackground = ImageProvider(R.drawable.calendar_selected_bg_3)
+
+    when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> CalendarSmall(
+            modifier = GlanceModifier.fillMaxSize(),
+            calendar = calendar,
+            dayOfWeekNames = dayOfWeekNames,
+            selectedDateBackground = selectedDateBackground
+        )
+
+        GlanceWidgetSize.MEDIUM -> CalendarMedium(
+            modifier = GlanceModifier.fillMaxSize(),
+            calendar = calendar,
+            dayOfWeekNames = dayOfWeekNames,
+            selectedDateBackground = selectedDateBackground
+        )
+
+        GlanceWidgetSize.LARGE -> CalendarLarge(
+            modifier = GlanceModifier.fillMaxSize(),
+            calendar = calendar,
+            dayOfWeekNames = dayOfWeekNames,
+            selectedDateBackground = selectedDateBackground
+        )
+    }
+}
+
+@Composable
+private fun CalendarSmall(
+    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    calendar: Calendar,
+    dayOfWeekNames: List<String>,
+    selectedDateBackground: ImageProvider
+) {
+    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear().uppercase()
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Header(
+            modifier = GlanceModifier.fillMaxWidth(),
+            monthAndYearMonth = monthAndYear,
+            textSize = 14.sp,
+            textColor = Color.White
+        )
+
+        DaysOfWeek(
+            textColor = "#FF9330".toColor(),
+            textSize = 7.sp,
+            dayOfWeekNames = dayOfWeekNames
+        )
+
+        DatesDefault(
+            calendar = calendar,
+            dateTextSize = 8.sp,
+            focusedDateColor = Color.White,
+            unfocusedDateColor = Color.White.copy(0.57F),
+            selectedDateColor = Color.White,
+            selectedDateBackground = selectedDateBackground,
+            showUnfocusedDates = true
+        )
+    }
+}
+
+@Composable
+private fun CalendarMedium(
+    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    calendar: Calendar,
+    dayOfWeekNames: List<String>,
+    selectedDateBackground: ImageProvider
+) {
+    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear()
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Header(
+            modifier = GlanceModifier.fillMaxWidth(),
+            monthAndYearMonth = monthAndYear,
+            textSize = 14.sp,
+            textColor = Color.White
+        )
+
+        DaysOfWeek(
+            textColor = "#FF9330".toColor(),
+            textSize = 7.sp,
+            dayOfWeekNames = dayOfWeekNames
+        )
+
+        DatesDefault(
+            calendar = calendar,
+            dateTextSize = 8.sp,
+            focusedDateColor = Color.White,
+            unfocusedDateColor = Color.White.copy(0.57F),
+            selectedDateColor = Color.White,
+            selectedDateBackground = selectedDateBackground,
+            showUnfocusedDates = true
+        )
+    }
+}
+
+@Composable
+private fun CalendarLarge(
+    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    calendar: Calendar,
+    dayOfWeekNames: List<String>,
+    selectedDateBackground: ImageProvider
+) {
+    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear()
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Header(
+            modifier = GlanceModifier.fillMaxWidth(),
+            monthAndYearMonth = monthAndYear,
+            textSize = 16.sp,
+            textColor = Color.White
+        )
+
+        DaysOfWeek(
+            textColor = "#FF9330".toColor(),
+            textSize = 12.sp,
+            dayOfWeekNames = dayOfWeekNames
+        )
+
+        DatesDefault(
+            calendar = calendar,
+            dateTextSize = 12.sp,
+            focusedDateColor = Color.White,
+            unfocusedDateColor = Color.White.copy(0.57F),
+            selectedDateColor = Color.White,
+            selectedDateBackground = selectedDateBackground,
+            showUnfocusedDates = true
+        )
+    }
+}
 
 @SuppressLint("RestrictedApi")
 @Composable
 private fun Header(
     modifier: GlanceModifier = GlanceModifier,
     monthAndYearMonth: String,
-    textSize: Float,
-    textColor: Int
+    textSize: TextUnit,
+    textColor: Color
 ) {
     Text(
         modifier = modifier,
         text = monthAndYearMonth,
         style = TextStyle(
-            fontSize = TextUnit(textSize, TextUnitType.Sp),
+            fontSize = textSize,
             color = ColorProvider(textColor),
             textAlign = TextAlign.Start
         )

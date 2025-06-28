@@ -2,12 +2,12 @@ package com.s4ltf1sh.glance_widgets
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.db.calendar.CalendarEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
-import com.s4ltf1sh.glance_widgets.db.clock.ClockDigitalEntity
-import com.s4ltf1sh.glance_widgets.db.quote.QuoteEntity
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
+import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,31 +20,31 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val widgetRepository: WidgetModelRepository
+    private val widgetRepository: GlanceWidgetRepository
 ) : ViewModel() {
-    private val _quotes: MutableStateFlow<List<QuoteEntity>> = MutableStateFlow(emptyList())
+    private val _quotes: MutableStateFlow<List<GlanceQuoteEntity>> = MutableStateFlow(emptyList())
     val quotes = _quotes.asStateFlow()
 
-    private val _clockDigitals = MutableStateFlow<List<ClockDigitalEntity>>(emptyList())
-    val clockDigitals: StateFlow<List<ClockDigitalEntity>> = _clockDigitals.asStateFlow()
+    private val _clockDigitals = MutableStateFlow<List<GlanceClockDigitalEntity>>(emptyList())
+    val clockDigitals: StateFlow<List<GlanceClockDigitalEntity>> = _clockDigitals.asStateFlow()
 
-    private val _clockAnalogs = MutableStateFlow<List<ClockAnalogEntity>>(emptyList())
-    val clockAnalogs: StateFlow<List<ClockAnalogEntity>> = _clockAnalogs.asStateFlow()
+    private val _clockAnalogs = MutableStateFlow<List<GlanceClockAnalogEntity>>(emptyList())
+    val clockAnalogs: StateFlow<List<GlanceClockAnalogEntity>> = _clockAnalogs.asStateFlow()
 
 
-    fun getQuotesBySize(size: WidgetSize) = viewModelScope.launch {
+    fun getQuotesBySize(size: GlanceWidgetSize) = viewModelScope.launch {
         widgetRepository.getQuotesBySize(size).distinctUntilChanged()
             .collectLatest { comments ->
                 _quotes.update { comments }
             }
     }
 
-    fun insertQuotes(quotes: List<QuoteEntity>) = viewModelScope.launch {
+    fun insertQuotes(quotes: List<GlanceQuoteEntity>) = viewModelScope.launch {
         widgetRepository.insertQuotes(quotes)
     }
 
     // Clock Digital operations
-    fun getClockDigitalsBySize(size: WidgetSize) {
+    fun getClockDigitalsBySize(size: GlanceWidgetSize) {
         viewModelScope.launch {
             widgetRepository.getClockDigitalsBySize(size).collect { clockDigitalList ->
                 _clockDigitals.value = clockDigitalList
@@ -52,26 +52,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun insertClockDigitals(clockDigitals: List<ClockDigitalEntity>) {
+    fun insertClockDigitals(clockDigitals: List<GlanceClockDigitalEntity>) {
         viewModelScope.launch {
             widgetRepository.insertClockDigitals(clockDigitals)
         }
     }
 
     // Clock Analog operations
-    fun getClockAnalogsBySize(size: WidgetSize) = viewModelScope.launch {
+    fun getClockAnalogsBySize(size: GlanceWidgetSize) = viewModelScope.launch {
         widgetRepository.getClockAnalogBySize(size).distinctUntilChanged()
             .collectLatest { clockAnalogList ->
                 _clockAnalogs.update { clockAnalogList }
             }
     }
 
-    fun insertClockAnalogs(clockAnalogs: List<ClockAnalogEntity>) = viewModelScope.launch {
+    fun insertClockAnalogs(clockAnalogs: List<GlanceClockAnalogEntity>) = viewModelScope.launch {
         widgetRepository.insertClockAnalogs(clockAnalogs)
     }
 
     // Calendar operations
-    fun insertCalendars(calendars: List<CalendarEntity>) = viewModelScope.launch {
+    fun insertCalendars(calendars: List<GlanceCalendarEntity>) = viewModelScope.launch {
         widgetRepository.insertCalendars(calendars)
     }
 }

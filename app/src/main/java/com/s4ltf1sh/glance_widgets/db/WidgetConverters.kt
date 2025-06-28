@@ -1,8 +1,8 @@
 package com.s4ltf1sh.glance_widgets.db
 
 import androidx.room.TypeConverter
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -10,18 +10,18 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 class WidgetConverters {
 
     @TypeConverter
-    fun fromWidgetType(type: WidgetType): String = type.typeId
+    fun fromWidgetType(type: GlanceWidgetType): String = type.typeId
 
     @TypeConverter
-    fun toWidgetType(typeId: String): WidgetType {
-        return WidgetType.fromTypeId(typeId) ?: WidgetType.fromLegacyEnum(typeId)
+    fun toWidgetType(typeId: String): GlanceWidgetType {
+        return GlanceWidgetType.fromTypeId(typeId) ?: GlanceWidgetType.fromLegacyEnum(typeId)
     }
 
     @TypeConverter
-    fun fromWidgetSize(size: WidgetSize): String = size.name
+    fun fromWidgetSize(size: GlanceWidgetSize): String = size.name
 
     @TypeConverter
-    fun toWidgetSize(size: String): WidgetSize = WidgetSize.valueOf(size)
+    fun toWidgetSize(size: String): GlanceWidgetSize = GlanceWidgetSize.valueOf(size)
 
     @TypeConverter
     fun fromStringList(value: List<String>): String {

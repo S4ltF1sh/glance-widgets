@@ -17,14 +17,13 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.model.Widget
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun WeatherWidget(widget: Widget, widgetId: Int) {
+fun WeatherWidget(glanceWidget: GlanceWidget, widgetId: Int) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -33,8 +32,8 @@ fun WeatherWidget(widget: Widget, widgetId: Int) {
                 actionStartActivity<MainActivity>(
                     parameters = actionParametersOf(
                         BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
-                        BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
+                        BaseAppWidget.KEY_WIDGET_TYPE to glanceWidget.type.typeId,
+                        BaseAppWidget.KEY_WIDGET_SIZE to glanceWidget.size.name
                     )
                 )
             ),
@@ -51,14 +50,14 @@ fun WeatherWidget(widget: Widget, widgetId: Int) {
                 text = "Weather",
                 style = TextStyle(color = ColorProvider(Color.White))
             )
-            when (widget.size) {
-                WidgetSize.SMALL -> Text("25°C")
-                WidgetSize.MEDIUM -> {
+            when (glanceWidget.size) {
+                GlanceWidgetSize.SMALL -> Text("25°C")
+                GlanceWidgetSize.MEDIUM -> {
                     Text("25°C - Sunny")
                     Text("Hanoi")
                 }
 
-                WidgetSize.LARGE -> {
+                GlanceWidgetSize.LARGE -> {
                     Text("25°C - Sunny")
                     Text("Hanoi, Vietnam")
                     Text("Humidity: 65%")

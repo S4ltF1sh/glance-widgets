@@ -12,10 +12,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetEntity
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.model.clock.digital.WidgetClockDigitalData
 import com.s4ltf1sh.glance_widgets.utils.downloadImageWithCoil
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
@@ -51,11 +51,11 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
         fun enqueue(
             context: Context,
             widgetId: Int,
-            type: WidgetType.Clock.Digital,
-            widgetSize: WidgetSize,
+            type: GlanceWidgetType.Clock.Digital,
+            glanceWidgetSize: GlanceWidgetSize,
             backgroundUrl: String
         ) {
-            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $widgetSize, URL: $backgroundUrl")
+            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $glanceWidgetSize, URL: $backgroundUrl")
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
             val request = OneTimeWorkRequestBuilder<ClockDigitalWidgetWorker>().apply {
@@ -65,11 +65,11 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
                     Data.Builder()
                         .putInt(WIDGET_ID, widgetId)
                         .putString(WIDGET_TYPE, type.typeId)
-                        .putString(WIDGET_SIZE, widgetSize.name)
+                        .putString(WIDGET_SIZE, glanceWidgetSize.name)
                         .putString(BACKGROUND_URL, backgroundUrl)
                         .putString(CLOCK_TYPE, when (type) {
-                            is WidgetType.Clock.Digital.Type1 -> "TYPE1"
-                            is WidgetType.Clock.Digital.Type2 -> "TYPE2"
+                            is GlanceWidgetType.Clock.Digital.Type1Glance -> "TYPE1"
+                            is GlanceWidgetType.Clock.Digital.Type2Glance -> "TYPE2"
                         })
                         .build()
                 )
@@ -94,8 +94,8 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
 
         val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
 
-        val widgetSize = try {
-            inputData.getString(WIDGET_SIZE)?.let { WidgetSize.valueOf(it) }
+        val glanceWidgetSize = try {
+            inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
         } catch (e: Exception) {
             Log.e(TAG, "Invalid widget size", e)
             null
@@ -105,11 +105,11 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
         val clockType = inputData.getString(CLOCK_TYPE)
 
         // Validate inputs
-        if (widgetSize == null || backgroundUrl.isNullOrEmpty() || clockType.isNullOrEmpty()) {
-            Log.e(TAG, "Missing required data - Size: $widgetSize, URL: $backgroundUrl, ClockType: $clockType")
+        if (glanceWidgetSize == null || backgroundUrl.isNullOrEmpty() || clockType.isNullOrEmpty()) {
+            Log.e(TAG, "Missing required data - Size: $glanceWidgetSize, URL: $backgroundUrl, ClockType: $clockType")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = widgetSize ?: WidgetSize.SMALL,
+                glanceWidgetSize = glanceWidgetSize ?: GlanceWidgetSize.SMALL,
                 message = "Invalid input data",
                 throwable = IllegalArgumentException("Widget size, background URL, or clock type is missing")
             )
@@ -117,13 +117,13 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
         }
 
         // Start download process
-        return downloadAndUpdateWidget(widgetId, glanceId, widgetSize, backgroundUrl, clockType)
+        return downloadAndUpdateWidget(widgetId, glanceId, glanceWidgetSize, backgroundUrl, clockType)
     }
 
     private suspend fun downloadAndUpdateWidget(
         widgetId: Int,
         glanceId: GlanceId,
-        widgetSize: WidgetSize,
+        glanceWidgetSize: GlanceWidgetSize,
         backgroundUrl: String,
         clockType: String
     ): Result {
@@ -135,7 +135,7 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to download background after retries for widget: $widgetId")
                 context.setWidgetEmpty(
                     glanceId = glanceId,
-                    widgetSize = widgetSize
+                    glanceWidgetSize = glanceWidgetSize
                 )
                 return Result.failure()
             }
@@ -148,7 +148,7 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to update widget data for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     message = "Failed to update widget data",
                     throwable = NullPointerException("Widget with ID $widgetId does not exist")
                 )
@@ -156,13 +156,13 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
             }
 
             // Update widget UI
-            val updateUISuccess = context.updateWidgetUI(widgetId, widgetSize)
+            val updateUISuccess = context.updateWidgetUI(widgetId, glanceWidgetSize)
 
             if (!updateUISuccess) {
                 Log.e(TAG, "Failed to update widget UI for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     message = "Failed to update widget UI",
                     throwable = Exception("Update UI failed for widget ID $widgetId")
                 )
@@ -171,7 +171,7 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
                 Log.d(TAG, "Widget $widgetId updated successfully")
                 context.setWidgetSuccess(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     widget = updated
                 )
                 return Result.success()
@@ -217,15 +217,15 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
         return ""
     }
 
-    private suspend fun updateWidgetData(widgetId: Int, backgroundPath: String, clockType: String): WidgetEntity? {
+    private suspend fun updateWidgetData(widgetId: Int, backgroundPath: String, clockType: String): GlanceWidgetEntity? {
         return try {
-            val repo = WidgetModelRepository.get(context)
+            val repo = GlanceWidgetRepository.get(context)
             val widget = repo.getWidget(widgetId)
             
             // Determine the correct WidgetType based on clockType
-            val widgetType = when (clockType) {
-                "TYPE1" -> WidgetType.Clock.Digital.Type1
-                "TYPE2" -> WidgetType.Clock.Digital.Type2
+            val glanceWidgetType = when (clockType) {
+                "TYPE1" -> GlanceWidgetType.Clock.Digital.Type1Glance
+                "TYPE2" -> GlanceWidgetType.Clock.Digital.Type2Glance
                 else -> {
                     Log.e(TAG, "Unknown clock type: $clockType")
                     return null
@@ -236,7 +236,7 @@ class ClockDigitalWidgetWorker @AssistedInject constructor(
 
             // Only update data and timestamp, preserve other fields
             val updatedWidget = widget?.copy(
-                type = widgetType,
+                type = glanceWidgetType,
                 data = moshi
                     .adapter(WidgetClockDigitalData::class.java)
                     .toJson(clockData),

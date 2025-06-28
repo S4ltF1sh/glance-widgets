@@ -2,10 +2,9 @@ package com.s4ltf1sh.glance_widgets.di
 
 import android.content.Context
 import android.util.Log
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.model.WidgetType
-import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidgetWorker
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
+import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,8 +13,7 @@ import javax.inject.Singleton
 
 @Singleton
 class RedrawCalendarWidgetUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val widgetRepository: WidgetModelRepository
+    private val widgetRepository: GlanceWidgetRepository
 ) {
     companion object {
         private const val TAG = "RedrawCalendarUseCase"
@@ -30,7 +28,7 @@ class RedrawCalendarWidgetUseCase @Inject constructor(
                 Log.d(TAG, "Starting calendar widgets redraw process")
                 
                 // Get all calendar widgets from database
-                val calendarWidgets = widgetRepository.getAllWidgets().filter { it.type is WidgetType.Calendar }
+                val calendarWidgets = widgetRepository.getAllWidgets().filter { it.type is GlanceWidgetType.Calendar }
 
                 Log.d(TAG, "Found ${calendarWidgets.size} calendar widgets to update")
                 
@@ -43,12 +41,8 @@ class RedrawCalendarWidgetUseCase @Inject constructor(
                 calendarWidgets.forEach { widget ->
                     try {
                         Log.d(TAG, "Updating calendar widget ID: ${widget.widgetId}")
-
-                        // Enqueue update for this specific calendar widget
-                        CalendarWidgetWorker.enqueueUpdate(
-                            context = context,
-                            widgetId = widget.widgetId
-                        )
+                        // Set widget success state
+                        context.updateWidgetUI(widget.widgetId, widget.size)
                     } catch (e: Exception) {
                         Log.e(TAG, "Error updating calendar widget ${widget.widgetId}", e)
                     }
