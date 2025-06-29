@@ -1,5 +1,5 @@
 package com.s4ltf1sh.glance_widgets.model
 
-enum class WidgetSize {
+enum class GlanceWidgetSize {
     SMALL, MEDIUM, LARGE
 }

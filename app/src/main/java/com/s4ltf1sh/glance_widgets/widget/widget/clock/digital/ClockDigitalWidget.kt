@@ -21,9 +21,9 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.MainActivity
-import com.s4ltf1sh.glance_widgets.model.Widget
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.model.clock.digital.WidgetClockDigitalData
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.quotes.getImageProvider
@@ -32,7 +32,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 @Composable
 fun ClockDigitalWidget(
-    widget: Widget,
+    glanceWidget: GlanceWidget,
     widgetId: Int
 ) {
     val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -45,15 +45,15 @@ fun ClockDigitalWidget(
                 actionStartActivity<MainActivity>(
                     parameters = actionParametersOf(
                         BaseAppWidget.KEY_WIDGET_ID to widgetId,
-                        BaseAppWidget.KEY_WIDGET_TYPE to widget.type.typeId,
-                        BaseAppWidget.KEY_WIDGET_SIZE to widget.size.name
+                        BaseAppWidget.KEY_WIDGET_TYPE to glanceWidget.type.typeId,
+                        BaseAppWidget.KEY_WIDGET_SIZE to glanceWidget.size.name
                     )
                 )
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (widget.data.isNotEmpty()) {
-            val clockData = moshi.adapter(WidgetClockDigitalData::class.java).fromJson(widget.data)
+        if (glanceWidget.data.isNotEmpty()) {
+            val clockData = moshi.adapter(WidgetClockDigitalData::class.java).fromJson(glanceWidget.data)
                 ?: throw Exception("Invalid clock digital data")
 
             // Background image
@@ -65,9 +65,9 @@ fun ClockDigitalWidget(
             )
 
             // Overlay with clock information
-            when (widget.type) {
-                is WidgetType.Clock.Digital.Type1 -> ClockDigitalType1Layout(widget.size)
-                is WidgetType.Clock.Digital.Type2 -> ClockDigitalType2Layout(widget.size)
+            when (glanceWidget.type) {
+                is GlanceWidgetType.Clock.Digital.Type1Glance -> ClockDigitalType1Layout(glanceWidget.size)
+                is GlanceWidgetType.Clock.Digital.Type2Glance -> ClockDigitalType2Layout(glanceWidget.size)
                 else -> ClockDigitalEmptyState()
             }
         } else {
@@ -78,24 +78,24 @@ fun ClockDigitalWidget(
 
 @Composable
 private fun ClockDigitalType1Layout(
-    widgetSize: WidgetSize
+    glanceWidgetSize: GlanceWidgetSize
 ) {
-    val timeTextSize = when (widgetSize) {
-        WidgetSize.SMALL -> 36F
-        WidgetSize.MEDIUM -> 60F
-        WidgetSize.LARGE -> 96F
+    val timeTextSize = when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> 36F
+        GlanceWidgetSize.MEDIUM -> 60F
+        GlanceWidgetSize.LARGE -> 96F
     }
 
-    val dateTextSize = when (widgetSize) {
-        WidgetSize.SMALL -> 16F
-        WidgetSize.MEDIUM -> 20F
-        WidgetSize.LARGE -> 32F
+    val dateTextSize = when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> 16F
+        GlanceWidgetSize.MEDIUM -> 20F
+        GlanceWidgetSize.LARGE -> 32F
     }
 
-    val dayTextSize = when (widgetSize) {
-        WidgetSize.SMALL -> 24F
-        WidgetSize.MEDIUM -> 32F
-        WidgetSize.LARGE -> 48F
+    val dayTextSize = when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> 24F
+        GlanceWidgetSize.MEDIUM -> 32F
+        GlanceWidgetSize.LARGE -> 48F
     }
 
     Box(
@@ -115,18 +115,18 @@ private fun ClockDigitalType1Layout(
 
 @Composable
 private fun ClockDigitalType2Layout(
-    widgetSize: WidgetSize
+    glanceWidgetSize: GlanceWidgetSize
 ) {
-    val timeTextSize = when (widgetSize) {
-        WidgetSize.SMALL -> 60F
-        WidgetSize.MEDIUM -> 60F
-        WidgetSize.LARGE -> 100F
+    val timeTextSize = when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> 60F
+        GlanceWidgetSize.MEDIUM -> 60F
+        GlanceWidgetSize.LARGE -> 100F
     }
 
-    val dateTextSize = when (widgetSize) {
-        WidgetSize.SMALL -> 16F
-        WidgetSize.MEDIUM -> 16F
-        WidgetSize.LARGE -> 36F
+    val dateTextSize = when (glanceWidgetSize) {
+        GlanceWidgetSize.SMALL -> 16F
+        GlanceWidgetSize.MEDIUM -> 16F
+        GlanceWidgetSize.LARGE -> 36F
     }
 
     Box(

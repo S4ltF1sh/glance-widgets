@@ -11,21 +11,21 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import com.s4ltf1sh.glance_widgets.R
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.model.clock.analog.WidgetClockAnalogData
 
 @Composable
 fun ClockAnalog(
     paddingVertical: Dp,
     data: WidgetClockAnalogData,
-    widgetType: WidgetType
+    glanceWidgetType: GlanceWidgetType
 ) {
     val fileDirs = LocalContext.current.filesDir.absolutePath + "/.widget_images/"
     val packageName = LocalContext.current.packageName
     val remoteViews = RemoteViews(
         packageName,
-        when (widgetType) {
-            WidgetType.Clock.Analog.Type1 -> R.layout.component_clock_analog_1
+        when (glanceWidgetType) {
+            GlanceWidgetType.Clock.Analog.Type1Glance -> R.layout.component_clock_analog_1
             else -> R.layout.component_clock_analog_2 // Default to Type2 if not specified
         }
     ).apply {

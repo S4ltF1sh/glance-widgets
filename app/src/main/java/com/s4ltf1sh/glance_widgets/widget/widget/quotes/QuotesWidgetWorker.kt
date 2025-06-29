@@ -12,10 +12,10 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetEntity
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.model.quotes.WidgetQuoteData
 import com.s4ltf1sh.glance_widgets.utils.downloadImageWithCoil
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
@@ -49,11 +49,11 @@ class QuotesWidgetWorker @AssistedInject constructor(
         fun enqueue(
             context: Context,
             widgetId: Int,
-            type: WidgetType,
-            widgetSize: WidgetSize,
+            type: GlanceWidgetType,
+            glanceWidgetSize: GlanceWidgetSize,
             imageUrl: String
         ) {
-            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $widgetSize, URL: $imageUrl")
+            Log.d(TAG, "Enqueuing work for widget ID: $widgetId, Type: $type, Size: $glanceWidgetSize, URL: $imageUrl")
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
             val request =
@@ -64,7 +64,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                         Data.Builder()
                             .putInt(WIDGET_ID, widgetId)
                             .putString(WIDGET_TYPE, type.typeId)
-                            .putString(WIDGET_SIZE, widgetSize.name)
+                            .putString(WIDGET_SIZE, glanceWidgetSize.name)
                             .putString(IMAGE_URL, imageUrl)
                             .build()
                     )
@@ -89,8 +89,8 @@ class QuotesWidgetWorker @AssistedInject constructor(
 
         val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
 
-        val widgetSize = try {
-            inputData.getString(WIDGET_SIZE)?.let { WidgetSize.valueOf(it) }
+        val glanceWidgetSize = try {
+            inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
         } catch (e: Exception) {
             Log.e(TAG, "Invalid widget size", e)
             null
@@ -99,11 +99,11 @@ class QuotesWidgetWorker @AssistedInject constructor(
         val imageUrl = inputData.getString(IMAGE_URL)
 
         // Validate inputs
-        if (widgetSize == null || imageUrl.isNullOrEmpty()) {
-            Log.e(TAG, "Missing required data - Size: $widgetSize, URL: $imageUrl")
+        if (glanceWidgetSize == null || imageUrl.isNullOrEmpty()) {
+            Log.e(TAG, "Missing required data - Size: $glanceWidgetSize, URL: $imageUrl")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = widgetSize ?: WidgetSize.SMALL,
+                glanceWidgetSize = glanceWidgetSize ?: GlanceWidgetSize.SMALL,
                 message = "Invalid input data",
                 throwable = IllegalArgumentException("Widget size or image URL is missing")
             )
@@ -111,13 +111,13 @@ class QuotesWidgetWorker @AssistedInject constructor(
         }
 
         // Start download process
-        return downloadAndUpdateWidget(widgetId, glanceId, widgetSize, imageUrl)
+        return downloadAndUpdateWidget(widgetId, glanceId, glanceWidgetSize, imageUrl)
     }
 
     private suspend fun downloadAndUpdateWidget(
         widgetId: Int,
         glanceId: GlanceId,
-        widgetSize: WidgetSize,
+        glanceWidgetSize: GlanceWidgetSize,
         imageUrl: String
     ): Result {
         try {
@@ -129,7 +129,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to download image after retries for widget: $widgetId")
                 context.setWidgetEmpty(
                     glanceId = glanceId,
-                    widgetSize = widgetSize
+                    glanceWidgetSize = glanceWidgetSize
                 )
                 return Result.failure()
             }
@@ -142,7 +142,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to update widget data for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     message = "Failed to update widget data",
                     throwable = NullPointerException("Widget with ID $widgetId does not exist")
                 )
@@ -150,13 +150,13 @@ class QuotesWidgetWorker @AssistedInject constructor(
             }
 
             // Update widget UI
-            val updateUISuccess = context.updateWidgetUI(widgetId, widgetSize)
+            val updateUISuccess = context.updateWidgetUI(widgetId, glanceWidgetSize)
 
             if (!updateUISuccess) {
                 Log.e(TAG, "Failed to update widget UI for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     message = "Failed to update widget UI",
                     throwable = Exception("Update UI failed for widget ID $widgetId")
                 )
@@ -165,7 +165,7 @@ class QuotesWidgetWorker @AssistedInject constructor(
                 Log.d(TAG, "Widget $widgetId updated successfully")
                 context.setWidgetSuccess(
                     glanceId = glanceId,
-                    widgetSize = widgetSize,
+                    glanceWidgetSize = glanceWidgetSize,
                     widget = updated
                 )
                 return Result.success()
@@ -211,15 +211,15 @@ class QuotesWidgetWorker @AssistedInject constructor(
         return ""
     }
 
-    private suspend fun updateWidgetData(widgetId: Int, imagePath: String): WidgetEntity? {
+    private suspend fun updateWidgetData(widgetId: Int, imagePath: String): GlanceWidgetEntity? {
         return try {
-            val repo = WidgetModelRepository.get(context)
+            val repo = GlanceWidgetRepository.get(context)
             val widget = repo.getWidget(widgetId)
             val quoteData = WidgetQuoteData(imagePath = imagePath)
 
             // Only update data and timestamp, preserve other fields
             val updatedWidget = widget?.copy(
-                type = WidgetType.Quote,
+                type = GlanceWidgetType.Quote,
                 data = moshi
                     .adapter(WidgetQuoteData::class.java)
                     .toJson(quoteData),

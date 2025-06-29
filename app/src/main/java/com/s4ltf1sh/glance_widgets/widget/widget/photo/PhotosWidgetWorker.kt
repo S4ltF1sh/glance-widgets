@@ -13,8 +13,8 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.s4ltf1sh.glance_widgets.db.WidgetModelRepository
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetRepository
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.model.photo.WidgetPhotoData
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
@@ -41,10 +41,10 @@ class PhotosWidgetWorker @AssistedInject constructor(
         fun enqueue(
             context: Context,
             widgetId: Int,
-            widgetSize: WidgetSize,
+            glanceWidgetSize: GlanceWidgetSize,
             repeatTimeInMinutes: Long = 15,
         ) {
-            Log.d(TAG, "Enqueuing periodic work for widget ID: $widgetId, Size: $widgetSize")
+            Log.d(TAG, "Enqueuing periodic work for widget ID: $widgetId, Size: $glanceWidgetSize")
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
             val request = PeriodicWorkRequest.Builder(
@@ -56,7 +56,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
                 setInputData(
                     Data.Builder()
                         .putInt(WIDGET_ID, widgetId)
-                        .putString(WIDGET_SIZE, widgetSize.name)
+                        .putString(WIDGET_SIZE, glanceWidgetSize.name)
                         .build()
                 )
             }.build()
@@ -71,7 +71,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
         fun enqueueOnce(
             context: Context,
             widgetId: Int,
-            widgetSize: WidgetSize
+            glanceWidgetSize: GlanceWidgetSize
         ) {
             val workManager = WorkManager.getInstance(context)
             val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId) + "_once"
@@ -81,7 +81,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
                 setInputData(
                     Data.Builder()
                         .putInt(WIDGET_ID, widgetId)
-                        .putString(WIDGET_SIZE, widgetSize.name)
+                        .putString(WIDGET_SIZE, glanceWidgetSize.name)
                         .build()
                 )
             }.build()
@@ -103,32 +103,32 @@ class PhotosWidgetWorker @AssistedInject constructor(
 
         val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
 
-        val widgetSize = try {
-            inputData.getString(WIDGET_SIZE)?.let { WidgetSize.valueOf(it) }
+        val glanceWidgetSize = try {
+            inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
         } catch (e: Exception) {
             Log.e(TAG, "Invalid widget size", e)
             null
         }
 
-        if (widgetSize == null) {
-            Log.e(TAG, "Missing required data - Size: $widgetSize")
+        if (glanceWidgetSize == null) {
+            Log.e(TAG, "Missing required data - Size: $glanceWidgetSize")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = WidgetSize.SMALL,
+                glanceWidgetSize = GlanceWidgetSize.SMALL,
                 message = "Invalid widget size",
                 throwable = IllegalArgumentException("Widget size is missing")
             )
             return Result.failure()
         }
 
-        val repo = WidgetModelRepository.get(context)
+        val repo = GlanceWidgetRepository.get(context)
         val widget = repo.getWidget(widgetId)
 
         if (widget == null) {
             Log.e(TAG, "Widget not found for ID: $widgetId")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = widgetSize,
+                glanceWidgetSize = glanceWidgetSize,
                 message = "Widget not found",
                 throwable = NullPointerException("Widget with ID $widgetId does not exist")
             )
@@ -142,7 +142,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
             Log.e(TAG, "No photo data found for widget ID: $widgetId")
             context.setWidgetEmpty(
                 glanceId = glanceId,
-                widgetSize = widgetSize
+                glanceWidgetSize = glanceWidgetSize
             )
             return Result.failure()
         }
@@ -160,20 +160,20 @@ class PhotosWidgetWorker @AssistedInject constructor(
             Log.e(TAG, "Failed to update widget data for widget: $widgetId")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = widgetSize,
+                glanceWidgetSize = glanceWidgetSize,
                 message = "Failed to update widget data",
                 throwable = Exception("Update failed for widget ID $widgetId")
             )
             return Result.failure()
         }
 
-        val updateUISuccess = context.updateWidgetUI(widgetId, widgetSize)
+        val updateUISuccess = context.updateWidgetUI(widgetId, glanceWidgetSize)
 
         if (!updateUISuccess) {
             Log.e(TAG, "Failed to update widget UI for widget: $widgetId")
             context.setWidgetError(
                 glanceId = glanceId,
-                widgetSize = widgetSize,
+                glanceWidgetSize = glanceWidgetSize,
                 message = "Failed to update widget UI",
                 throwable = Exception("UI update failed for widget ID $widgetId")
             )
@@ -182,7 +182,7 @@ class PhotosWidgetWorker @AssistedInject constructor(
             Log.d(TAG, "Widget $widgetId updated successfully")
             context.setWidgetSuccess(
                 glanceId = glanceId,
-                widgetSize = widgetSize,
+                glanceWidgetSize = glanceWidgetSize,
                 widget = updatedWidget
             )
             return Result.success()

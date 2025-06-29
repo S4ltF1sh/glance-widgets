@@ -9,9 +9,9 @@ import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.GlanceStateDefinition
-import com.s4ltf1sh.glance_widgets.db.WidgetEntity
-import com.s4ltf1sh.glance_widgets.model.Widget
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
+import com.s4ltf1sh.glance_widgets.db.GlanceWidgetEntity
+import com.s4ltf1sh.glance_widgets.model.GlanceWidget
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.utils.updateWidgetUI
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
@@ -32,7 +32,7 @@ sealed interface AppWidgetState {
     data object Empty : AppWidgetState
 
     @Serializable
-    data class Success(val widget: Widget) : AppWidgetState
+    data class Success(val glanceWidget: GlanceWidget) : AppWidgetState
 
     @Serializable
     data class Error(val message: String, val throwable: String? = null) : AppWidgetState
@@ -118,8 +118,8 @@ object BaseWidgetStateDefinition : GlanceStateDefinition<AppWidgetState> {
  */
 suspend fun Context.setWidgetSuccess(
     glanceId: GlanceId,
-    widgetSize: WidgetSize,
-    widget: WidgetEntity
+    glanceWidgetSize: GlanceWidgetSize,
+    widget: GlanceWidgetEntity
 ) {
     updateAppWidgetState(
         context = this,
@@ -128,7 +128,7 @@ suspend fun Context.setWidgetSuccess(
     ) {
         AppWidgetState.Success(widget.toWidget())
     }
-    updateWidgetUI(glanceId, widgetSize)
+    updateWidgetUI(glanceId, glanceWidgetSize)
 }
 
 /**
@@ -136,7 +136,7 @@ suspend fun Context.setWidgetSuccess(
  */
 suspend fun Context.setWidgetError(
     glanceId: GlanceId,
-    widgetSize: WidgetSize,
+    glanceWidgetSize: GlanceWidgetSize,
     message: String,
     throwable: Throwable? = null
 ) {
@@ -148,13 +148,13 @@ suspend fun Context.setWidgetError(
         AppWidgetState.Error(message, throwable?.message)
     }
 
-    updateWidgetUI(glanceId, widgetSize)
+    updateWidgetUI(glanceId, glanceWidgetSize)
 }
 
 /**
  * Helper function to set widget state to Empty
  */
-suspend fun Context.setWidgetEmpty(glanceId: GlanceId, widgetSize: WidgetSize) {
+suspend fun Context.setWidgetEmpty(glanceId: GlanceId, glanceWidgetSize: GlanceWidgetSize) {
     updateAppWidgetState(
         context = this,
         definition = BaseWidgetStateDefinition,
@@ -162,13 +162,13 @@ suspend fun Context.setWidgetEmpty(glanceId: GlanceId, widgetSize: WidgetSize) {
     ) {
         AppWidgetState.Empty
     }
-    updateWidgetUI(glanceId, widgetSize)
+    updateWidgetUI(glanceId, glanceWidgetSize)
 }
 
 /**
  * Helper function to refresh widget data
  */
-suspend fun Context.refreshWidget(glanceId: GlanceId, widgetSize: WidgetSize) {
+suspend fun Context.refreshWidget(glanceId: GlanceId, glanceWidgetSize: GlanceWidgetSize) {
     updateAppWidgetState(
         context = this,
         definition = BaseWidgetStateDefinition,
@@ -176,7 +176,7 @@ suspend fun Context.refreshWidget(glanceId: GlanceId, widgetSize: WidgetSize) {
     ) {
         AppWidgetState.Init
     }
-    updateWidgetUI(glanceId, widgetSize)
+    updateWidgetUI(glanceId, glanceWidgetSize)
 }
 
 /**

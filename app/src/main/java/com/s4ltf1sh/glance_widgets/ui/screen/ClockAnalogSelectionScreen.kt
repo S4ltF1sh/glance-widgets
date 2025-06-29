@@ -21,16 +21,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.s4ltf1sh.glance_widgets.db.clock.ClockAnalogEntity
+import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
-import com.s4ltf1sh.glance_widgets.model.WidgetSize
-import com.s4ltf1sh.glance_widgets.model.WidgetType
+import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 
 @Composable
 fun ClockAnalogSelectionScreen(
-    widgetSize: WidgetSize,
-    clockAnalogBackgrounds: List<ClockAnalogEntity>,
-    onClockAnalogSelected: (ClockAnalogEntity) -> Unit
+    glanceWidgetSize: GlanceWidgetSize,
+    clockAnalogBackgrounds: List<GlanceClockAnalogEntity>,
+    onClockAnalogSelected: (GlanceClockAnalogEntity) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -44,7 +43,7 @@ fun ClockAnalogSelectionScreen(
         )
 
         Text(
-            text = "Widget Size: ${widgetSize.name}",
+            text = "Widget Size: ${glanceWidgetSize.name}",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 8.dp)
@@ -70,14 +69,14 @@ fun ClockAnalogSelectionScreen(
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = getGridCellSize(widgetSize)),
+                columns = GridCells.Adaptive(minSize = getGridCellSize(glanceWidgetSize)),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(clockAnalogBackgrounds) { clockAnalog ->
                     ClockAnalogItem(
                         clockAnalog = clockAnalog,
-                        widgetSize = widgetSize,
+                        glanceWidgetSize = glanceWidgetSize,
                         onClick = { onClockAnalogSelected(clockAnalog) }
                     )
                 }
@@ -88,14 +87,14 @@ fun ClockAnalogSelectionScreen(
 
 @Composable
 private fun ClockAnalogItem(
-    clockAnalog: ClockAnalogEntity,
-    widgetSize: WidgetSize,
+    clockAnalog: GlanceClockAnalogEntity,
+    glanceWidgetSize: GlanceWidgetSize,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(getAspectRatio(widgetSize))
+            .aspectRatio(getAspectRatio(glanceWidgetSize))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -139,14 +138,14 @@ private fun ClockAnalogItem(
     }
 }
 
-private fun getGridCellSize(widgetSize: WidgetSize): Dp = when (widgetSize) {
-    WidgetSize.SMALL -> 120.dp
-    WidgetSize.MEDIUM -> 160.dp
-    WidgetSize.LARGE -> 200.dp
+private fun getGridCellSize(glanceWidgetSize: GlanceWidgetSize): Dp = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 120.dp
+    GlanceWidgetSize.MEDIUM -> 160.dp
+    GlanceWidgetSize.LARGE -> 200.dp
 }
 
-private fun getAspectRatio(widgetSize: WidgetSize): Float = when (widgetSize) {
-    WidgetSize.SMALL -> 1f
-    WidgetSize.MEDIUM -> 2f
-    WidgetSize.LARGE -> 1f
+private fun getAspectRatio(glanceWidgetSize: GlanceWidgetSize): Float = when (glanceWidgetSize) {
+    GlanceWidgetSize.SMALL -> 1f
+    GlanceWidgetSize.MEDIUM -> 2f
+    GlanceWidgetSize.LARGE -> 1f
 }
