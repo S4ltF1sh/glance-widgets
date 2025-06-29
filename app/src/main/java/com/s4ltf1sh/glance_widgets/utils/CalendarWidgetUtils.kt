@@ -130,6 +130,15 @@ fun Calendar.getMonthName(
     return format.format(time)
 }
 
+fun Calendar.getMonthAndYear(
+    locale: Locale = Locale.getDefault()
+): String {
+    val month = get(Calendar.MONTH)
+    set(Calendar.MONTH, month + 1) // Convert to 1-based (1=January, 12=December)
+    val format = SimpleDateFormat(CalendarWidgetUtils.MONTH_YEAR_FORMAT, locale)
+    return format.format(time)
+}
+
 fun selectedDateBackground(glanceWidgetType: GlanceWidgetType.Calendar): ImageProvider {
     return ImageProvider(
         when (glanceWidgetType) {

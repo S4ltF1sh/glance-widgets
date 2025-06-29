@@ -406,6 +406,8 @@ fun DatesDefault(
     nextMonthCalendar.add(Calendar.MONTH, 1)
 
     // Tạo array để chứa tất cả các ngày cần hiển thị (42 ô = 6 tuần × 7 ngày)
+    val lastDayPosition = firstDayOfMonthOffset + daysInCurrentMonth - 1
+    val rowCount = (lastDayPosition / CalendarWidgetUtils.COLUMN_COUNT) + 1
     val totalCells = CalendarWidgetUtils.ROW_COUNT * CalendarWidgetUtils.COLUMN_COUNT
     val dateItems = Array<DateItem?>(totalCells) { null }
 
@@ -458,7 +460,7 @@ fun DatesDefault(
     }
 
     Column(modifier = modifier) {
-        for (row in 0 until CalendarWidgetUtils.ROW_COUNT) {
+        for (row in 0 until rowCount) {
             Row(
                 modifier = GlanceModifier.fillMaxWidth().defaultWeight(),
                 verticalAlignment = Alignment.CenterVertically

@@ -16,13 +16,16 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.R
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
-import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
+import com.s4ltf1sh.glance_widgets.utils.getMonthAndYear
 import com.s4ltf1sh.glance_widgets.utils.selectedDateBackground
 import com.s4ltf1sh.glance_widgets.utils.toColor
 import com.s4ltf1sh.glance_widgets.widget.component.GlanceIcon
@@ -38,8 +41,9 @@ fun CalendarType2(
 ) {
     val selectedDateBackground = selectedDateBackground(GlanceWidgetType.Calendar.Type2Glance)
 
-    when(glanceWidgetSize) {
+    when (glanceWidgetSize) {
         GlanceWidgetSize.SMALL -> CalendarSmall(
+            modifier = GlanceModifier.fillMaxSize().padding(4.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             onGoToPreviousMonth = onGoToPreviousMonth,
@@ -48,6 +52,7 @@ fun CalendarType2(
         )
 
         GlanceWidgetSize.MEDIUM -> CalendarMedium(
+            modifier = GlanceModifier.fillMaxSize().padding(4.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             onGoToPreviousMonth = onGoToPreviousMonth,
@@ -56,6 +61,7 @@ fun CalendarType2(
         )
 
         GlanceWidgetSize.LARGE -> CalendarLarge(
+            modifier = GlanceModifier.fillMaxSize().padding(10.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             onGoToPreviousMonth = onGoToPreviousMonth,
@@ -74,33 +80,37 @@ private fun CalendarSmall(
     onGoToNextMonth: () -> Unit,
     selectedDateBackground: ImageProvider
 ) {
-    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear()
+    val monthAndYear = calendar.getMonthAndYear()
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 6.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 10f,
             textColor = Color(0xFFFCFDB2),
-            iconSize = 10.dp,
+            iconSize = 16.dp,
             iconColor = Color(0xFF0A84FF),
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth
         )
 
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
         DaysOfWeek(
-            textColor = "#EBEBF580".toColor(),
-            textSize = 6.sp,
+            textColor = Color(0x80EBEBF5),
+            textSize = 9.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
             dateTextSize = 10.sp,
             focusedDateColor = "#FCFDB2".toColor(),
+            selectedDateColor = "#0A84FF".toColor(),
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = false
         )
@@ -116,33 +126,37 @@ private fun CalendarMedium(
     onGoToNextMonth: () -> Unit,
     selectedDateBackground: ImageProvider
 ) {
-    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear()
+    val monthAndYear = calendar.getMonthAndYear()
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 15.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 10f,
             textColor = Color(0xFFFCFDB2),
-            iconSize = 10.dp,
+            iconSize = 16.dp,
             iconColor = Color(0xFF0A84FF),
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth
         )
 
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
         DaysOfWeek(
-            textColor = "#EBEBF580".toColor(),
-            textSize = 6.sp,
+            textColor = Color(0x80EBEBF5),
+            textSize = 9.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
             dateTextSize = 10.sp,
             focusedDateColor = "#FCFDB2".toColor(),
+            selectedDateColor = "#0A84FF".toColor(),
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = false
         )
@@ -158,33 +172,37 @@ private fun CalendarLarge(
     onGoToNextMonth: () -> Unit,
     selectedDateBackground: ImageProvider
 ) {
-    val monthAndYear = CalendarWidgetUtils.getCurrentMonthAndYear()
+    val monthAndYear = calendar.getMonthAndYear()
 
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 12.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 16f,
             textColor = Color(0xFFFCFDB2),
-            iconSize = 20.dp,
+            iconSize = 24.dp,
             iconColor = Color(0xFF0A84FF),
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth
         )
 
+        Spacer(modifier = GlanceModifier.height(10.dp))
+
         DaysOfWeek(
-            textColor = "#EBEBF580".toColor(),
-            textSize = 12.sp,
+            textColor = Color(0x80EBEBF5),
+            textSize = 14.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
             dateTextSize = 20.sp,
             focusedDateColor = "#FCFDB2".toColor(),
+            selectedDateColor = "#0A84FF".toColor(),
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = false
         )
@@ -211,7 +229,8 @@ private fun Header(
             text = monthAndYearMonth,
             style = TextStyle(
                 fontSize = TextUnit(textSize, TextUnitType.Sp),
-                color = ColorProvider(textColor)
+                color = ColorProvider(textColor),
+                fontWeight = FontWeight.Medium
             )
         )
 
@@ -222,7 +241,7 @@ private fun Header(
         )
 
         Spacer(
-            modifier = GlanceModifier.fillMaxWidth()
+            modifier = GlanceModifier.defaultWeight()
         )
 
         GlanceIcon(

@@ -212,11 +212,11 @@ class MainActivity : ComponentActivity() {
                         CalendarSelectionScreen(
                             widgetId = widgetId,
                             glanceWidgetSize = currentSize,
-                            calendarType = calendarType,
                             onBackPressed = {
                                 screenState = ScreenState.TYPE_SELECTION
                             },
                             onCalendarSelected = { calendar ->
+                                Log.d("MainActivity", "Selected Calendar: $calendar")
                                 CalendarWidgetWorker.enqueue(
                                     context = this,
                                     widgetId = widgetId,

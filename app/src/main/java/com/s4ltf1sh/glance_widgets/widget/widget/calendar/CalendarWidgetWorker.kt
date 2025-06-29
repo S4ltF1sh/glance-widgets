@@ -88,21 +88,28 @@ class CalendarWidgetWorker @AssistedInject constructor(
         }
 
         val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
-        val widgetType = inputData.getString(WIDGET_TYPE)
-
-        return setupNewCalendar(widgetId, glanceId)
-    }
-
-    private suspend fun setupNewCalendar(widgetId: Int, glanceId: GlanceId): Result {
-        try {
-            val glanceWidgetSize = try {
-                inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
-                    ?: GlanceWidgetSize.MEDIUM
-            } catch (e: Exception) {
-                Log.e(TAG, "Invalid widget size", e)
-                GlanceWidgetSize.MEDIUM
+        val widgetType =
+            inputData.getString(WIDGET_TYPE)?.let { GlanceWidgetType.fromTypeId(it) } ?: run {
+                Log.e(TAG, "Invalid or missing widget type for widget ID: $widgetId")
+                return Result.failure()
             }
 
+        val widgetSize = inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
+            ?: run {
+                Log.w(TAG, "Widget size not provided, defaulting to MEDIUM")
+                return Result.failure()
+            }
+
+        return setupNewCalendar(widgetId, glanceId, widgetType, widgetSize)
+    }
+
+    private suspend fun setupNewCalendar(
+        widgetId: Int,
+        glanceId: GlanceId,
+        widgetType: GlanceWidgetType,
+        widgetSize: GlanceWidgetSize
+    ): Result {
+        try {
             val backgroundImageUrl =
                 inputData.getString(BACKGROUND_IMAGE_URL)?.takeIf { it.isNotEmpty() }
 
@@ -115,12 +122,12 @@ class CalendarWidgetWorker @AssistedInject constructor(
             val calendarData = WidgetCalendarData(backgroundPath = backgroundImagePath)
 
             // Update widget data
-            val updated = updateWidgetData(widgetId, calendarData)
+            val updated = updateWidgetData(widgetId, widgetType, calendarData)
             if (updated == null) {
                 Log.e(TAG, "Failed to update widget data for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    glanceWidgetSize = glanceWidgetSize,
+                    glanceWidgetSize = widgetSize,
                     message = "Failed to update widget data",
                     throwable = NullPointerException("Widget with ID $widgetId does not exist")
                 )
@@ -128,13 +135,13 @@ class CalendarWidgetWorker @AssistedInject constructor(
             }
 
             // Update widget UI
-            val updateUISuccess = context.updateWidgetUI(widgetId, glanceWidgetSize)
+            val updateUISuccess = context.updateWidgetUI(widgetId, widgetSize)
 
             if (!updateUISuccess) {
                 Log.e(TAG, "Failed to update widget UI for widget: $widgetId")
                 context.setWidgetError(
                     glanceId = glanceId,
-                    glanceWidgetSize = glanceWidgetSize,
+                    glanceWidgetSize = widgetSize,
                     message = "Failed to update widget UI",
                     throwable = Exception("Update UI failed for widget ID $widgetId")
                 )
@@ -143,7 +150,7 @@ class CalendarWidgetWorker @AssistedInject constructor(
                 Log.d(TAG, "Calendar widget $widgetId updated successfully")
                 context.setWidgetSuccess(
                     glanceId = glanceId,
-                    glanceWidgetSize = glanceWidgetSize,
+                    glanceWidgetSize = widgetSize,
                     widget = updated
                 )
                 return Result.success()
@@ -191,15 +198,15 @@ class CalendarWidgetWorker @AssistedInject constructor(
 
     private suspend fun updateWidgetData(
         widgetId: Int,
+        widgetType: GlanceWidgetType,
         calendarData: WidgetCalendarData
     ): GlanceWidgetEntity? {
         return try {
             val repo = GlanceWidgetRepository.get(context)
             val widget = repo.getWidget(widgetId)
 
-            // Update data and timestamp, preserve other fields
             val updatedWidget = widget?.copy(
-                type = GlanceWidgetType.Calendar.Type1Glance, // Default to Type1, can be modified based on requirements
+                type = widgetType,
                 data = moshi
                     .adapter(WidgetCalendarData::class.java)
                     .toJson(calendarData),

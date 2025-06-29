@@ -43,7 +43,6 @@ import com.s4ltf1sh.glance_widgets.widget.component.WidgetImage
 fun CalendarSelectionScreen(
     widgetId: Int,
     glanceWidgetSize: GlanceWidgetSize,
-    calendarType: GlanceWidgetType.Calendar,
     onBackPressed: () -> Unit,
     onCalendarSelected: (GlanceCalendarEntity) -> Unit
 ) {
@@ -57,7 +56,6 @@ fun CalendarSelectionScreen(
     Content(
         uiState = uiState,
         glanceWidgetSize = glanceWidgetSize,
-        calendarType = calendarType,
         onBackPressed = onBackPressed,
         onItemClicked = onCalendarSelected
     )
@@ -68,7 +66,6 @@ fun CalendarSelectionScreen(
 private fun Content(
     uiState: CalendarSelectionUiState,
     glanceWidgetSize: GlanceWidgetSize,
-    calendarType: GlanceWidgetType.Calendar,
     onBackPressed: () -> Unit,
     onItemClicked: (GlanceCalendarEntity) -> Unit
 ) {
@@ -104,7 +101,7 @@ private fun Content(
                 CalendarItem(
                     calendar = calendar,
                     glanceWidgetSize = glanceWidgetSize,
-                    glanceWidgetType = calendarType,
+                    glanceWidgetType = calendar.type as GlanceWidgetType.Calendar,
                     onClick = {
                         onItemClicked(calendar)
                     }
