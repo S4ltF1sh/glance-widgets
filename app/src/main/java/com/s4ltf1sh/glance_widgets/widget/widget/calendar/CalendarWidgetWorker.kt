@@ -27,6 +27,11 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.delay
 
+private enum class WorkType() {
+    INIT,
+    UPDATE_TIME
+}
+
 @HiltWorker
 class CalendarWidgetWorker @AssistedInject constructor(
     @Assisted val context: Context,
@@ -38,6 +43,8 @@ class CalendarWidgetWorker @AssistedInject constructor(
         private const val WIDGET_ID = "widget_id"
         private const val WIDGET_TYPE = "widget_type"
         private const val WIDGET_SIZE = "widget_size"
+        private const val LASTED_UPDATE = "lasted_update"
+        private const val WORK_TYPE = "work_type"
         private const val BACKGROUND_IMAGE_URL = "background_image_url"
 
         private const val TAG = "CalendarWidgetWorker"
@@ -64,9 +71,41 @@ class CalendarWidgetWorker @AssistedInject constructor(
                 setInputData(
                     Data.Builder()
                         .putInt(WIDGET_ID, widgetId)
+                        .putString(WORK_TYPE, WorkType.INIT.name)
                         .putString(WIDGET_TYPE, type.typeId)
                         .putString(WIDGET_SIZE, glanceWidgetSize.name)
                         .putString(BACKGROUND_IMAGE_URL, backgroundImageUrl ?: "")
+                        .build()
+                )
+            }.build()
+
+            workManager.enqueueUniqueWork(
+                uniqueWorkName = widgetWorkerName,
+                existingWorkPolicy = ExistingWorkPolicy.REPLACE,
+                request = request
+            )
+        }
+
+        fun updateTime(
+            context: Context,
+            widgetId: Int,
+            lastedUpdate: Long
+        ) {
+            Log.d(TAG, "Updating time for widget ID: $widgetId, lastedUpdate: $lastedUpdate")
+
+            val workManager = WorkManager.getInstance(context)
+            val widgetWorkerName = BaseAppWidget.getWidgetWorkerName(widgetId)
+
+            workManager.cancelUniqueWork(widgetWorkerName)
+
+            val request = OneTimeWorkRequestBuilder<CalendarWidgetWorker>().apply {
+                addTag(widgetWorkerName)
+                setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                setInputData(
+                    Data.Builder()
+                        .putInt(WIDGET_ID, widgetId)
+                        .putString(WORK_TYPE, WorkType.UPDATE_TIME.name)
+                        .putLong(LASTED_UPDATE, lastedUpdate)
                         .build()
                 )
             }.build()
@@ -88,28 +127,43 @@ class CalendarWidgetWorker @AssistedInject constructor(
         }
 
         val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(widgetId)
-        val widgetType =
-            inputData.getString(WIDGET_TYPE)?.let { GlanceWidgetType.fromTypeId(it) } ?: run {
-                Log.e(TAG, "Invalid or missing widget type for widget ID: $widgetId")
-                return Result.failure()
-            }
 
-        val widgetSize = inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
+        val workType = inputData.getString(WORK_TYPE)?.let { WorkType.valueOf(it) }
             ?: run {
-                Log.w(TAG, "Widget size not provided, defaulting to MEDIUM")
+                Log.e(TAG, "Invalid or missing work type for widget ID: $widgetId")
                 return Result.failure()
             }
 
-        return setupNewCalendar(widgetId, glanceId, widgetType, widgetSize)
+        return when (workType) {
+            WorkType.INIT -> {
+                setupNewCalendar(widgetId, glanceId)
+            }
+
+            WorkType.UPDATE_TIME -> {
+                updateWidgetDataTime(widgetId)
+            }
+        }
+
+
     }
 
     private suspend fun setupNewCalendar(
         widgetId: Int,
-        glanceId: GlanceId,
-        widgetType: GlanceWidgetType,
-        widgetSize: GlanceWidgetSize
+        glanceId: GlanceId
     ): Result {
         try {
+            val widgetType =
+                inputData.getString(WIDGET_TYPE)?.let { GlanceWidgetType.fromTypeId(it) } ?: run {
+                    Log.e(TAG, "Invalid or missing widget type for widget ID: $widgetId")
+                    return Result.failure()
+                }
+
+            val widgetSize = inputData.getString(WIDGET_SIZE)?.let { GlanceWidgetSize.valueOf(it) }
+                ?: run {
+                    Log.w(TAG, "Widget size not provided, defaulting to MEDIUM")
+                    return Result.failure()
+                }
+
             val backgroundImageUrl =
                 inputData.getString(BACKGROUND_IMAGE_URL)?.takeIf { it.isNotEmpty() }
 
@@ -224,6 +278,58 @@ class CalendarWidgetWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error updating calendar widget data", e)
             null
+        }
+    }
+
+    private suspend fun updateWidgetDataTime(widgetId: Int): Result {
+        try {
+            val lastedUpdate = inputData.getLong(LASTED_UPDATE, -1L)
+
+            if (lastedUpdate == -1L) {
+                Log.e(TAG, "Invalid or missing lasted update time for widget ID: $widgetId")
+                return Result.failure()
+            }
+
+            val repo = GlanceWidgetRepository.get(context)
+            val widget = repo.getWidget(widgetId)
+
+            if(widget == null) {
+                Log.e(TAG, "Widget not found for ID: $widgetId")
+                return Result.failure()
+            }
+
+            val widgetSize = widget.size
+
+            val calendarData = widget.data.let {
+                moshi.adapter(WidgetCalendarData::class.java).fromJson(it)
+            } ?: WidgetCalendarData.Init()
+
+            val newData = calendarData.copy(
+                lastedUpdate = lastedUpdate
+            )
+
+            val updatedWidget = widget.copy(
+                data = moshi
+                    .adapter(WidgetCalendarData::class.java)
+                    .toJson(newData),
+                lastUpdated = System.currentTimeMillis()
+            )
+
+            Log.d(TAG, "Updating calendar widget data for ID: $widgetId")
+            val insertedSuccess = repo.updateWidget(updatedWidget)
+
+            if (insertedSuccess == -1) {
+                Log.e(TAG, "Failed to update widget data for ID: $widgetId")
+                return Result.failure()
+            }
+
+            Log.d(TAG, "Calendar widget data updated successfully for ID: $widgetId, lastedUpdate: $lastedUpdate")
+
+            context.updateWidgetUI(widgetId, widgetSize)
+            return Result.success()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating calendar widget data", e)
+            return Result.failure()
         }
     }
 }

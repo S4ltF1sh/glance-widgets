@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
@@ -49,13 +50,50 @@ fun CalendarWidget(
     widgetId: Int
 ) {
     val context = LocalContext.current
+
+    val calendarData = try {
+        moshi.adapter(WidgetCalendarData::class.java).fromJson(glanceWidget.data)
+    } catch (e: Exception) {
+        Log.d("CalendarWidget", "Error parsing calendar data: ${e.message}")
+        null
+    }
+
+    if (calendarData == null) {
+        Log.d("CalendarWidget", "No calendar data available for widgetId: $widgetId")
+        CalendarErrorState()
+        return
+    } else {
+        Log.d("CalendarWidget", "Loaded calendar data for widgetId: $widgetId, last updated at ${calendarData.lastedUpdate}")
+    }
+
     val milliSecond = remember {
-        mutableLongStateOf(System.currentTimeMillis())
+        mutableLongStateOf(calendarData.lastedUpdate)
     }
 
     val calendar = Calendar.getInstance()
         .setSundayAsFirstDayOfWeek()
         .setTimeInMilliSecond(milliSecond.longValue)
+
+//    DisposableEffect(context) {
+//        // When the effect leaves the Composition, remove the observer
+//        onDispose {
+//            Log.d("CalendarWidget", "Disposing CalendarWidget for widgetId: $widgetId")
+//
+//            val lastedTime = milliSecond.longValue
+//
+//            if (calendarData.lastedUpdate != lastedTime) {
+//                try {
+//                    CalendarWidgetWorker.updateTime(
+//                        context = context,
+//                        widgetId = widgetId,
+//                        lastedUpdate = lastedTime
+//                    )
+//                } catch (e: Exception) {
+//                    Log.e("CalendarWidget", "Error saving calendar data: ${e.message}")
+//                }
+//            }
+//        }
+//    }
 
     Box(
         modifier = GlanceModifier
@@ -77,36 +115,41 @@ fun CalendarWidget(
             return@Box
         }
 
-        val calendarData = try {
-            moshi.adapter(WidgetCalendarData::class.java).fromJson(glanceWidget.data)
-        } catch (e: Exception) {
-            Log.d("CalendarWidget", "Error parsing calendar data: ${e.message}")
-            null
-        }
+        CalendarContent(
+            context = context,
+            calendar = calendar,
+            calendarData = calendarData,
+            glanceWidgetType = glanceWidget.type as GlanceWidgetType.Calendar,
+            glanceWidgetSize = glanceWidget.size,
+            gotoNextMonth = {
+                calendar.setTimeInMilliSecond(milliSecond.longValue)
+                calendar.add(Calendar.MONTH, 1)
 
-        if (calendarData != null) {
-            CalendarContent(
-                context = context,
-                calendar = calendar,
-                calendarData = calendarData,
-                glanceWidgetType = glanceWidget.type as GlanceWidgetType.Calendar,
-                glanceWidgetSize = glanceWidget.size,
-                gotoNextMonth = {
-                    val nextMonth = calendar.apply {
-                        add(Calendar.MONTH, 1) // Move to the next month
-                    }
-                    milliSecond.longValue = nextMonth.timeInMillis
-                },
-                gotoPreviousMonth = {
-                    val previousMonth = calendar.apply {
-                        add(Calendar.MONTH, -1) // Move to the previous month
-                    }
-                    milliSecond.longValue = previousMonth.timeInMillis
-                }
-            )
-        } else {
-            CalendarErrorState()
-        }
+                val newTime = calendar.timeInMillis
+                Log.d("CalendarWidget", "Going to next month: $newTime")
+
+                milliSecond.longValue = newTime
+                CalendarWidgetWorker.updateTime(
+                    context = context,
+                    widgetId = widgetId,
+                    lastedUpdate = newTime
+                )
+            },
+            gotoPreviousMonth = {
+                calendar.setTimeInMilliSecond(milliSecond.longValue)
+                calendar.add(Calendar.MONTH, -1)
+
+                val newTime = calendar.timeInMillis
+                Log.d("CalendarWidget", "Going to previous month: $newTime")
+
+                milliSecond.longValue = newTime
+                CalendarWidgetWorker.updateTime(
+                    context = context,
+                    widgetId = widgetId,
+                    lastedUpdate = newTime
+                )
+            }
+        )
     }
 }
 
@@ -146,7 +189,11 @@ private fun CalendarContent(
             GlanceWidgetType.Calendar.Type2Glance, GlanceWidgetType.Calendar.Type4Glance -> CalendarType2(
                 glanceWidgetSize = glanceWidgetSize,
                 calendar = calendar,
-                dayOfWeekNames = getDayOfWeekNamesFromResources(context, glanceWidgetType, glanceWidgetSize),
+                dayOfWeekNames = getDayOfWeekNamesFromResources(
+                    context,
+                    glanceWidgetType,
+                    glanceWidgetSize
+                ),
                 onGoToPreviousMonth = gotoPreviousMonth,
                 onGoToNextMonth = gotoNextMonth
             )
@@ -154,13 +201,21 @@ private fun CalendarContent(
             GlanceWidgetType.Calendar.Type3Glance -> CalendarType3(
                 glanceWidgetSize = glanceWidgetSize,
                 calendar = calendar,
-                dayOfWeekNames = getDayOfWeekNamesFromResources(context, glanceWidgetType, glanceWidgetSize),
+                dayOfWeekNames = getDayOfWeekNamesFromResources(
+                    context,
+                    glanceWidgetType,
+                    glanceWidgetSize
+                ),
             )
 
             GlanceWidgetType.Calendar.Type5Glance -> CalendarType5(
                 glanceWidgetSize = glanceWidgetSize,
                 calendar = calendar,
-                dayOfWeekNames = getDayOfWeekNamesFromResources(context, glanceWidgetType, glanceWidgetSize)
+                dayOfWeekNames = getDayOfWeekNamesFromResources(
+                    context,
+                    glanceWidgetType,
+                    glanceWidgetSize
+                )
             )
         }
     }
