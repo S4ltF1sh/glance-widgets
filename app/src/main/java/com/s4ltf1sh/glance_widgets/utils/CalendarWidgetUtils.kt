@@ -92,7 +92,7 @@ internal object CalendarWidgetUtils {
     ): String {
         val calendar = Calendar.getInstance()
         val month = calendar.get(Calendar.MONTH)
-        calendar.set(Calendar.MONTH, month + 1) // Convert to 1-based (1=January, 12=December)
+        calendar.set(Calendar.MONTH, month) // Convert to 1-based (1=January, 12=December)
         val format = SimpleDateFormat(MONTH_YEAR_FORMAT, locale)
         return format.format(calendar.time)
     }
@@ -103,7 +103,7 @@ fun Calendar.getDayOfWeekName(
     fullName: Boolean = true
 ): String {
     val dayOfWeek = get(Calendar.DAY_OF_WEEK)
-    set(Calendar.DAY_OF_WEEK, dayOfWeek + 1) // Convert to 1-based (1=Sunday, 7=Saturday)
+    set(Calendar.DAY_OF_WEEK, dayOfWeek) // Convert to 1-based (1=Sunday, 7=Saturday)
 
     val format = if (fullName) {
         SimpleDateFormat("EEEE", locale)

@@ -20,6 +20,9 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
+import androidx.glance.layout.wrapContentHeight
+import androidx.glance.layout.wrapContentWidth
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
@@ -38,14 +41,17 @@ fun CalendarType5(
     dayOfWeekNames: List<String>
 ) {
     val selectedDateBackground = ImageProvider(R.drawable.calendar_selected_bg_5)
+    val todayCalendar = CalendarWidgetUtils.getCalendar(System.currentTimeMillis())
+
     when (glanceWidgetSize) {
-        GlanceWidgetSize.SMALL -> CalendarSmall(Calendar.getInstance())
+        GlanceWidgetSize.SMALL -> CalendarSmall(todayCalendar)
         GlanceWidgetSize.MEDIUM -> CalendarMedium(
-            calendar = Calendar.getInstance(),
+            calendar = todayCalendar,
             dayOfWeekNames = dayOfWeekNames
         )
+
         GlanceWidgetSize.LARGE -> CalendarLarge(
-            calendar = Calendar.getInstance(),
+            calendar = todayCalendar,
             dayOfWeekNames = dayOfWeekNames,
             selectedDateBackground = selectedDateBackground
         )
@@ -59,7 +65,7 @@ private fun CalendarSmall(
     CalendarSingleDayView(
         modifier = GlanceModifier.fillMaxSize().padding(vertical = 10.dp),
         calendar = calendar,
-        spaceBetween = 10.dp,
+        spaceBetween = 8.dp,
         monthAndYearTextSize = 14.sp,
         monthAndYearTextColor = Color.White,
         dayOfWeek = calendar.getDayOfWeekName(),
@@ -81,15 +87,15 @@ private fun CalendarMedium(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CalendarSingleDayView(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.wrapContentWidth(),
             calendar = calendar,
             spaceBetween = 10.dp,
             monthAndYearTextSize = 16.sp,
             monthAndYearTextColor = Color.White,
-            dayOfWeek = calendar.getDayOfWeekName(),
+            dayOfWeek = CalendarWidgetUtils.getTodayDayOfWeek(),
             dayOfWeekTextSize = 24.sp,
             dayOfWeekTextColor = Color.White,
-            dayOfMonthTextSize = 64.sp,
+            dayOfMonthTextSize = 60.sp,
             datOfMonthTextColor = Color.White
         )
 
@@ -140,10 +146,11 @@ private fun CalendarLarge(
 ) {
     Column(
         modifier = modifier.padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         LargeWidgetHeader(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 6.dp),
             calendar = calendar,
             dayOfWeekSize = 28.sp,
             dayOfWeekColor = Color.White,
@@ -151,15 +158,29 @@ private fun CalendarLarge(
             monthYearColor = Color.White
         )
 
+        Row(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 14.dp)
+        ) {
+            Spacer(
+                modifier = GlanceModifier.height(0.5.dp)
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .background(Color.White)
+            )
+        }
+
         DaysOfWeek(
-            textColor = Color.White,
-            textSize = 12.sp,
+            textColor = Color(0xB3EBEBF5),
+            textSize = 16.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
-            dateTextSize = 20.sp,
+            dateTextSize = 18.sp,
             focusedDateColor = Color.White,
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = false
@@ -178,10 +199,10 @@ private fun LargeWidgetHeader(
     monthYearColor: Color
 ) {
     Row(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = modifier,
             text = CalendarWidgetUtils.getTodayDayOfWeek(),
             style = TextStyle(
                 fontSize = dayOfWeekSize,
@@ -190,9 +211,10 @@ private fun LargeWidgetHeader(
             )
         )
 
-        Spacer(modifier = GlanceModifier.fillMaxWidth())
+        Spacer(modifier = GlanceModifier.defaultWeight())
 
         CalendarHeaderDefault(
+            modifier = GlanceModifier.wrapContentWidth().wrapContentHeight(),
             context = LocalContext.current,
             calendar = calendar,
             textSize = monthYearSize,
@@ -207,7 +229,7 @@ private fun LargeWidgetHeader(
 @SuppressLint("RestrictedApi")
 @Composable
 private fun CalendarSingleDayView(
-    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    modifier: GlanceModifier = GlanceModifier,
     calendar: Calendar,
     spaceBetween: Dp = 10.dp,
     monthAndYearTextSize: TextUnit,
@@ -220,21 +242,24 @@ private fun CalendarSingleDayView(
 ) {
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = dayOfWeek,
             style = TextStyle(
                 fontSize = dayOfWeekTextSize,
                 textAlign = TextAlign.Center,
-                color = ColorProvider(dayOfWeekTextColor)
+                color = ColorProvider(dayOfWeekTextColor),
+                fontWeight = FontWeight.Medium
             ),
-            modifier = GlanceModifier.fillMaxWidth().padding(Dimens.defaultPadding)
+            modifier = GlanceModifier
         )
 
         Spacer(modifier = GlanceModifier.height(spaceBetween))
 
         CalendarHeaderDefault(
+            modifier = GlanceModifier.wrapContentWidth().wrapContentHeight(),
             context = LocalContext.current,
             calendar = calendar,
             textColor = monthAndYearTextColor,
@@ -251,9 +276,10 @@ private fun CalendarSingleDayView(
             style = TextStyle(
                 fontSize = dayOfMonthTextSize,
                 textAlign = TextAlign.Center,
-                color = ColorProvider(datOfMonthTextColor)
+                color = ColorProvider(datOfMonthTextColor),
+                fontWeight = FontWeight.Medium
             ),
-            modifier = GlanceModifier.fillMaxWidth().padding(Dimens.defaultPadding)
+            modifier = GlanceModifier
         )
     }
 }
