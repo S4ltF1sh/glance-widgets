@@ -72,7 +72,7 @@ internal object CalendarWidgetUtils {
     ): String {
         val calendar = Calendar.getInstance()
         val month = calendar.get(Calendar.MONTH)
-        calendar.set(Calendar.MONTH, month + 1) // Convert to 1-based (1=January, 12=December)
+        calendar.set(Calendar.MONTH, month) // Convert to 1-based (1=January, 12=December)
 
         val format = if (fullName) {
             SimpleDateFormat("MMMM", locale)
@@ -119,7 +119,7 @@ fun Calendar.getMonthName(
     fullName: Boolean = true
 ): String {
     val month = get(Calendar.MONTH)
-    set(Calendar.MONTH, month + 1) // Convert to 1-based (1=January, 12=December)
+    set(Calendar.MONTH, month)
 
     val format = if (fullName) {
         SimpleDateFormat("MMMM", locale)
@@ -134,7 +134,7 @@ fun Calendar.getMonthAndYear(
     locale: Locale = Locale.getDefault()
 ): String {
     val month = get(Calendar.MONTH)
-    set(Calendar.MONTH, month + 1) // Convert to 1-based (1=January, 12=December)
+    set(Calendar.MONTH, month)
     val format = SimpleDateFormat(CalendarWidgetUtils.MONTH_YEAR_FORMAT, locale)
     return format.format(time)
 }

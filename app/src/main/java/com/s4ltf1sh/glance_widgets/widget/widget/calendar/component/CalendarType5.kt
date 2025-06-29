@@ -29,7 +29,6 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.s4ltf1sh.glance_widgets.R
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
-import com.s4ltf1sh.glance_widgets.ui.theme.Dimens
 import com.s4ltf1sh.glance_widgets.utils.CalendarWidgetUtils
 import com.s4ltf1sh.glance_widgets.utils.getDayOfWeekName
 import java.util.Calendar

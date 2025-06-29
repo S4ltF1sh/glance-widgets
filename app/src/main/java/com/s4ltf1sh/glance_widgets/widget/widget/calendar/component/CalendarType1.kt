@@ -43,7 +43,7 @@ fun CalendarType1(
         )
 
         GlanceWidgetSize.MEDIUM -> CalendarMedium(
-            modifier = GlanceModifier.fillMaxSize().padding(16.dp),
+            modifier = GlanceModifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 18.dp),
             calendar = calendar,
             onGoToPreviousMonth = onGoToPreviousMonth,
             onGoToNextMonth = onGoToNextMonth,
@@ -156,7 +156,7 @@ private fun CalendarMedium(
         )
 
         DatesDefault(
-            modifier = GlanceModifier.wrapContentHeight().fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
             dateTextSize = 12.sp,
             focusedDateColor = Color.White,
