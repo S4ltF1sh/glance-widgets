@@ -376,34 +376,34 @@ class MainActivity : ComponentActivity() {
             // Calendar Type1
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.SMALL,
-                type = GlanceWidgetType.Calendar.Type1Glance,
+                type = GlanceWidgetType.Calendar.Type3Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=1"
             ),
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.MEDIUM,
-                type = GlanceWidgetType.Calendar.Type1Glance,
+                type = GlanceWidgetType.Calendar.Type3Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=2"
             ),
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.LARGE,
-                type = GlanceWidgetType.Calendar.Type1Glance,
+                type = GlanceWidgetType.Calendar.Type3Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=3"
             ),
 
             // Calendar Type2
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.SMALL,
-                type = GlanceWidgetType.Calendar.Type2Glance,
+                type = GlanceWidgetType.Calendar.Type5Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=4"
             ),
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.MEDIUM,
-                type = GlanceWidgetType.Calendar.Type2Glance,
+                type = GlanceWidgetType.Calendar.Type5Glance,
                 backgroundUrl = "https://picsum.photos/800/400?random=5"
             ),
             GlanceCalendarEntity(
                 size = GlanceWidgetSize.LARGE,
-                type = GlanceWidgetType.Calendar.Type2Glance,
+                type = GlanceWidgetType.Calendar.Type5Glance,
                 backgroundUrl = "https://picsum.photos/400/400?random=6"
             )
         )

@@ -4,13 +4,18 @@ import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.ImageProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
@@ -31,21 +36,21 @@ fun CalendarType3(
 
     when (glanceWidgetSize) {
         GlanceWidgetSize.SMALL -> CalendarSmall(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize().padding(6.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             selectedDateBackground = selectedDateBackground
         )
 
         GlanceWidgetSize.MEDIUM -> CalendarMedium(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize().padding(vertical = 4.dp, horizontal = 64.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             selectedDateBackground = selectedDateBackground
         )
 
         GlanceWidgetSize.LARGE -> CalendarLarge(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize().padding(12.dp),
             calendar = calendar,
             dayOfWeekNames = dayOfWeekNames,
             selectedDateBackground = selectedDateBackground
@@ -67,23 +72,26 @@ private fun CalendarSmall(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 8.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 14.sp,
             textColor = Color.White
         )
 
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
         DaysOfWeek(
             textColor = "#FF9330".toColor(),
-            textSize = 7.sp,
+            textSize = 9.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
-            dateTextSize = 8.sp,
+            dateTextSize = 11.sp,
             focusedDateColor = Color.White,
-            unfocusedDateColor = Color.White.copy(0.57F),
+            unfocusedDateColor = Color.White.copy(0.41F),
             selectedDateColor = Color.White,
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = true
@@ -105,23 +113,26 @@ private fun CalendarMedium(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 12.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 14.sp,
             textColor = Color.White
         )
 
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
         DaysOfWeek(
             textColor = "#FF9330".toColor(),
-            textSize = 7.sp,
+            textSize = 9.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
-            dateTextSize = 8.sp,
+            dateTextSize = 11.sp,
             focusedDateColor = Color.White,
-            unfocusedDateColor = Color.White.copy(0.57F),
+            unfocusedDateColor = Color.White.copy(0.41F),
             selectedDateColor = Color.White,
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = true
@@ -143,23 +154,26 @@ private fun CalendarLarge(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Header(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 12.dp),
             monthAndYearMonth = monthAndYear,
             textSize = 16.sp,
             textColor = Color.White
         )
 
+        Spacer(modifier = GlanceModifier.height(6.dp))
+
         DaysOfWeek(
             textColor = "#FF9330".toColor(),
-            textSize = 12.sp,
+            textSize = 14.sp,
             dayOfWeekNames = dayOfWeekNames
         )
 
         DatesDefault(
+            modifier = GlanceModifier.fillMaxSize(),
             calendar = calendar,
             dateTextSize = 12.sp,
             focusedDateColor = Color.White,
-            unfocusedDateColor = Color.White.copy(0.57F),
+            unfocusedDateColor = Color.White.copy(0.41F),
             selectedDateColor = Color.White,
             selectedDateBackground = selectedDateBackground,
             showUnfocusedDates = true
@@ -181,7 +195,8 @@ private fun Header(
         style = TextStyle(
             fontSize = textSize,
             color = ColorProvider(textColor),
-            textAlign = TextAlign.Start
+            textAlign = TextAlign.Start,
+            fontWeight = FontWeight.Medium
         )
     )
 }
