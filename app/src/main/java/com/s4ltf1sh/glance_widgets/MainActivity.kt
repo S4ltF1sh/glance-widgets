@@ -20,6 +20,7 @@ import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
 import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherEntity
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetType
 import com.s4ltf1sh.glance_widgets.ui.screen.CalendarSelectionScreen
@@ -28,6 +29,7 @@ import com.s4ltf1sh.glance_widgets.ui.screen.ClockDigitalSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.ConfigurationScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.PhotoSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.screen.QuoteSelectionScreen
+import com.s4ltf1sh.glance_widgets.ui.screen.weather.WeatherSelectionScreen
 import com.s4ltf1sh.glance_widgets.ui.theme.GlancewidgetsTheme
 import com.s4ltf1sh.glance_widgets.widget.core.BaseAppWidget
 import com.s4ltf1sh.glance_widgets.widget.widget.calendar.CalendarWidgetWorker
@@ -114,6 +116,10 @@ class MainActivity : ComponentActivity() {
 
                                         is GlanceWidgetType.Calendar -> {
                                             screenState = ScreenState.CALENDAR_SELECTION
+                                        }
+
+                                        is GlanceWidgetType.Weather -> {
+                                            screenState = ScreenState.WEATHER_SELECTION
                                         }
 
                                         else -> {
@@ -206,9 +212,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     ScreenState.CALENDAR_SELECTION -> {
-                        val calendarType =
-                            currentType as? GlanceWidgetType.Calendar ?: GlanceWidgetType.Calendar.Type1Glance
-
                         CalendarSelectionScreen(
                             widgetId = widgetId,
                             glanceWidgetSize = currentSize,
@@ -227,6 +230,22 @@ class MainActivity : ComponentActivity() {
                                 finish()
                             }
                         )
+                    }
+
+                    ScreenState.WEATHER_SELECTION ->  {
+                        WeatherSelectionScreen(
+                            glanceWidgetSize = currentSize,
+                            onBackPressed = {
+                                screenState = ScreenState.TYPE_SELECTION
+                            }
+                        ) { weather ->
+                            // Handle weather selection
+
+                            //TODO: Implement weather selection logic
+                            //TODO: Download weather image and enqueue worker
+                            Log.d("MainActivity", "Selected Weather: $weather")
+                            finish()
+                        }
                     }
                 }
             }
@@ -410,6 +429,84 @@ class MainActivity : ComponentActivity() {
 
         mainViewModel.insertCalendars(sampleCalendars)
     }
+
+    private fun initializeSampleWeather() {
+        // Add sample weather data - replace with your actual weather images
+        val sampleWeather = listOf(
+            // Weather Type1
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Weather.Type1Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Weather.Type1Glance,
+                backgroundUrl = "https://picsum.photos/800/400"
+            ),
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Weather.Type1Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+
+            // Weather Type2
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Weather.Type2Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Weather.Type2Glance,
+                backgroundUrl = "https://picsum.photos/800/400"
+            ),
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Weather.Type2Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+
+            // Weather Type3 and Type4
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Weather.Type3Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Weather.Type3Glance,
+                backgroundUrl = "https://picsum.photos/800/400"
+            ),
+
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Weather.Type3Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.SMALL,
+                type = GlanceWidgetType.Weather.Type4Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            ),
+
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.MEDIUM,
+                type = GlanceWidgetType.Weather.Type4Glance,
+                backgroundUrl = "https://picsum.photos/800/400"
+            ),
+
+            GlanceWeatherEntity(
+                size = GlanceWidgetSize.LARGE,
+                type = GlanceWidgetType.Weather.Type4Glance,
+                backgroundUrl = "https://picsum.photos/400/400"
+            )
+        )
+
+        mainViewModel.insertWeathers(sampleWeather)
+    }
 }
 
 private enum class ScreenState {
@@ -418,7 +515,8 @@ private enum class ScreenState {
     PHOTO_SELECTION,
     CLOCK_DIGITAL_SELECTION,
     CLOCK_ANALOG_SELECTION,
-    CALENDAR_SELECTION
+    CALENDAR_SELECTION,
+    WEATHER_SELECTION
 }
 
 @Composable

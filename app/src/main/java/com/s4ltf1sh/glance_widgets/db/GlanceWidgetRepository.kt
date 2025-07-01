@@ -10,6 +10,8 @@ import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.photo.GlancePhotoDao
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteDao
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherDao
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherEntity
 import com.s4ltf1sh.glance_widgets.di.AppCoroutineScope
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import com.squareup.moshi.Moshi
@@ -36,11 +38,13 @@ class GlanceWidgetRepository @Inject internal constructor(
     private val glanceClockDigitalDao: GlanceClockDigitalDao,
     private val glanceClockAnalogDao: GlanceClockAnalogDao,
     private val glanceCalendarDao: GlanceCalendarDao,
+    private val glanceWeatherDao: GlanceWeatherDao,
     private val moshi: Moshi,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
     @ApplicationContext private val appContext: Context,
 ) {
-    private val quoteTypes = Types.newParameterizedType(GlanceQuoteEntity::class.java, String::class.java)
+    private val quoteTypes =
+        Types.newParameterizedType(GlanceQuoteEntity::class.java, String::class.java)
     private val quoteAdapter = moshi.adapter<GlanceQuoteEntity>(quoteTypes)
 
     @EntryPoint
@@ -60,13 +64,15 @@ class GlanceWidgetRepository @Inject internal constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getWidgetFlow(widgetId: Int) = glanceWidgetDao.getWidgetFlow(widgetId).distinctUntilChanged()
+    fun getWidgetFlow(widgetId: Int) =
+        glanceWidgetDao.getWidgetFlow(widgetId).distinctUntilChanged()
 
     suspend fun getWidget(widgetId: Int): GlanceWidgetEntity? = glanceWidgetDao.getWidget(widgetId)
 
     suspend fun getAllWidgets(): List<GlanceWidgetEntity> = glanceWidgetDao.getAllWidgets()
 
-    suspend fun insertWidget(widget: GlanceWidgetEntity): Long = glanceWidgetDao.insertWidget(widget)
+    suspend fun insertWidget(widget: GlanceWidgetEntity): Long =
+        glanceWidgetDao.insertWidget(widget)
 
     suspend fun deleteWidgetById(widgetId: Int) = glanceWidgetDao.deleteWidgetById(widgetId)
 
@@ -120,5 +126,26 @@ class GlanceWidgetRepository @Inject internal constructor(
 
     suspend fun insertCalendars(calendars: List<GlanceCalendarEntity>) {
         glanceCalendarDao.insertCalendars(calendars)
+    }
+
+    // Weather related methods
+    fun getWeatherBySize(size: GlanceWidgetSize): Flow<List<GlanceWeatherEntity>> {
+        return glanceWeatherDao.getWeatherBySize(size)
+    }
+
+    suspend fun insertWeather(weather: GlanceWeatherEntity) {
+        glanceWeatherDao.insertWeather(weather)
+    }
+
+    suspend fun insertWeathers(weathers: List<GlanceWeatherEntity>) {
+        glanceWeatherDao.insertWeathers(weathers)
+    }
+
+    suspend fun deleteWeather(weather: GlanceWeatherEntity) {
+        glanceWeatherDao.deleteWeather(weather)
+    }
+
+    suspend fun updateWeather(weather: GlanceWeatherEntity) {
+        glanceWeatherDao.updateWeather(weather)
     }
 }

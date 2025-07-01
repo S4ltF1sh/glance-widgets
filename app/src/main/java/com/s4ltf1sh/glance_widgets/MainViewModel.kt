@@ -7,6 +7,7 @@ import com.s4ltf1sh.glance_widgets.db.calendar.GlanceCalendarEntity
 import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockAnalogEntity
 import com.s4ltf1sh.glance_widgets.db.clock.GlanceClockDigitalEntity
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherEntity
 import com.s4ltf1sh.glance_widgets.model.GlanceWidgetSize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,5 +74,10 @@ class MainViewModel @Inject constructor(
     // Calendar operations
     fun insertCalendars(calendars: List<GlanceCalendarEntity>) = viewModelScope.launch {
         widgetRepository.insertCalendars(calendars)
+    }
+
+    // Weather operations
+    fun insertWeathers(weathers: List<GlanceWeatherEntity>) = viewModelScope.launch {
+        widgetRepository.insertWeathers(weathers)
     }
 }

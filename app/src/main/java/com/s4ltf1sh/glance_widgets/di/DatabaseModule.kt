@@ -6,8 +6,9 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.s4ltf1sh.glance_widgets.db.AppDatabase
 import com.s4ltf1sh.glance_widgets.db.DatabaseManager
-import com.s4ltf1sh.glance_widgets.db.RoomDatabaseManager
 import com.s4ltf1sh.glance_widgets.db.GlanceWidgetDao
+import com.s4ltf1sh.glance_widgets.db.RoomDatabaseManager
+import com.s4ltf1sh.glance_widgets.db.WeatherRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -57,11 +58,25 @@ object DatabaseModule {
     fun providesCalendarDao(database: AppDatabase) = database.glanceCalendarDao()
 
     @Provides
+    fun providesWeatherDao(database: AppDatabase) = database.glanceWeatherDao()
+
+    @Provides
     @Singleton
     @AppCoroutineScope
     fun providesApplicationCoroutineScope(): CoroutineScope = CoroutineScope(
         Executors.newSingleThreadExecutor().asCoroutineDispatcher(),
     )
+
+    @Provides
+    @Singleton
+    fun provideWeatherRepository(): WeatherRepository = WeatherRepository()
+
+    @Provides
+    @Singleton
+    fun provideGetForecastUseCase(
+        weatherRepository: WeatherRepository,
+        @AppCoroutineScope coroutineScope: CoroutineScope
+    ): GetForecastUseCase = GetForecastUseCase(weatherRepository, coroutineScope)
 }
 
 @Module

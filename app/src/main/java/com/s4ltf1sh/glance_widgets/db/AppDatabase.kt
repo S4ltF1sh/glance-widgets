@@ -13,6 +13,8 @@ import com.s4ltf1sh.glance_widgets.db.photo.GlancePhotoDao
 import com.s4ltf1sh.glance_widgets.db.photo.GlancePhotoEntity
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteDao
 import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherDao
+import com.s4ltf1sh.glance_widgets.db.weather.GlanceWeatherEntity
 
 @Database(
     entities = [
@@ -21,7 +23,8 @@ import com.s4ltf1sh.glance_widgets.db.quote.GlanceQuoteEntity
         GlancePhotoEntity::class,
         GlanceClockDigitalEntity::class,
         GlanceClockAnalogEntity::class,
-        GlanceCalendarEntity::class
+        GlanceCalendarEntity::class,
+        GlanceWeatherEntity::class
     ],
     version = 2,
     exportSchema = false
@@ -34,6 +37,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun glanceClockDigitalDao(): GlanceClockDigitalDao
     abstract fun glanceClockAnalogDao(): GlanceClockAnalogDao
     abstract fun glanceCalendarDao(): GlanceCalendarDao
+    abstract fun glanceWeatherDao(): GlanceWeatherDao
 }
 
 fun RoomDatabase.wipeAndReinitializeData() = runInTransaction {
